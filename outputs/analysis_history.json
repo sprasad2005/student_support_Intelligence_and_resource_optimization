@@ -1,0 +1,20 @@
+[
+    {
+        "analysis_id": "20261008_170813",
+        "dataset_name": "student_test_small_20.csv",
+        "source_type": "Uploaded CSV",
+        "timestamp": "2026-10-08 17:08:13",
+        "student_count": 20,
+        "high_risk": 11,
+        "medium_risk": 1,
+        "low_risk": 8,
+        "total_support_demand": 57,
+        "capacity": 57,
+        "allocated_hours": 57,
+        "unused_hours": 0,
+        "students_selected": 12,
+        "demand_coverage": 100.0,
+        "predictions_file": "outputs\\history\\20261008_170813_predictions.csv",
+        "allocation_file": "outputs\\history\\20261008_170813_allocation.csv"
+    }
+]
