@@ -1114,6 +1114,8 @@ elif active_view == "Overview":
         st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
 
         # Hero Insight Banner
+        cov_pct = float(base_metrics.get('demand_coverage_percentage', 0.0))
+        ind_sel = int(base_metrics.get('individuals_selected', base_metrics.get('selected_individuals', 0)))
         st.markdown(
             f"""
             <div class="hero-insight">
@@ -1123,7 +1125,7 @@ elif active_view == "Overview":
                 </div>
                 <div class="hero-insight-body">
                     <b>{high_risk_count} individuals</b> are categorized as High Risk (probability ≥ 70%).<br>
-                    Estimated support requirement: <b>{high_demand_hours} hours / week</b> for high-risk individuals. At baseline capacity (<b>{base_cap}h</b>), the PuLP optimization solver covers <b>{base_metrics['demand_coverage_percentage']:.1f}%</b> of total cohort demand (<b>{base_metrics['individuals_selected']} individuals</b> supported).
+                    Estimated support requirement: <b>{high_demand_hours} hours / week</b> for high-risk individuals. At baseline capacity (<b>{base_cap}h</b>), the PuLP optimization solver covers <b>{cov_pct:.1f}%</b> of total cohort demand (<b>{ind_sel} individuals</b> supported).
                 </div>
             </div>
             """,
@@ -1325,15 +1327,24 @@ elif active_view == "Support Resource Allocation":
             st.error(f"Solver Status: {status}")
             st.stop()
 
+        alloc_h = int(metrics.get('allocated_hours', 0))
+        avail_h = int(metrics.get('available_hours', capacity_input))
+        unused_h = int(metrics.get('unused_hours', 0))
+        util_pct = float(metrics.get('resource_utilization_percentage', 0.0))
+        cov_pct = float(metrics.get('demand_coverage_percentage', 0.0))
+        ind_sel = int(metrics.get('individuals_selected', metrics.get('selected_individuals', 0)))
+        hr_sel = int(metrics.get('high_risk_selected', 0))
+        mr_sel = int(metrics.get('medium_risk_selected', 0))
+
         st.markdown(
             f"""
             <div class="card" style="border-left: 4px solid #22C55E; margin-bottom: 1.25rem;">
                 <div style="font-size: 14px; font-weight: 700; color: #F4F4F5; display: flex; justify-content: space-between;">
                     <span style="color:#4ADE80;">✓ Optimal Support Allocation Plan Solved (PuLP ILP)</span>
-                    <span class="badge badge-low">{metrics['resource_utilization_percentage']:.1f}% Resource Utilization</span>
+                    <span class="badge badge-low">{util_pct:.1f}% Resource Utilization</span>
                 </div>
                 <div style="font-size: 13px; color: #A1A1AA; margin-top: 6px;">
-                    <b>{metrics['allocated_hours']}h allocated</b> of {metrics['available_hours']}h available specialist budget · <b>{metrics['unused_hours']}h remaining</b> · <b>{metrics['individuals_selected']} individuals supported</b>
+                    <b>{alloc_h}h allocated</b> of {avail_h}h available specialist budget · <b>{unused_h}h remaining</b> · <b>{ind_sel} individuals supported</b>
                 </div>
             </div>
             """,
@@ -1342,13 +1353,14 @@ elif active_view == "Support Resource Allocation":
 
         k1, k2, k3, k4 = st.columns(4)
         with k1:
-            st.markdown(f'<div class="card"><div class="card-label">Allocated Support</div><div class="card-value" style="color:#818CF8;">{metrics["allocated_hours"]}h</div><div class="card-footer">Budget: {capacity_input}h</div></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="card"><div class="card-label">Allocated Support</div><div class="card-value" style="color:#818CF8;">{alloc_h}h</div><div class="card-footer">Budget: {capacity_input}h</div></div>', unsafe_allow_html=True)
         with k2:
-            st.markdown(f'<div class="card"><div class="card-label">Remaining Capacity</div><div class="card-value">{metrics["unused_hours"]}h</div><div class="card-footer">Unallocated hours</div></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="card"><div class="card-label">Remaining Capacity</div><div class="card-value">{unused_h}h</div><div class="card-footer">Unallocated hours</div></div>', unsafe_allow_html=True)
         with k3:
-            st.markdown(f'<div class="card"><div class="card-label">Demand Coverage</div><div class="card-value">{metrics["demand_coverage_percentage"]:.1f}%</div><div class="card-footer">{metrics["allocated_hours"]}h of {total_demand}h total demand</div></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="card"><div class="card-label">Demand Coverage</div><div class="card-value">{cov_pct:.1f}%</div><div class="card-footer">{alloc_h}h of {total_demand}h total demand</div></div>', unsafe_allow_html=True)
         with k4:
-            st.markdown(f'<div class="card"><div class="card-label">Individuals Selected</div><div class="card-value">{metrics["individuals_selected"]}</div><div class="card-footer">{metrics["high_risk_selected"]} High + {metrics["medium_risk_selected"]} Medium</div></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="card"><div class="card-label">Individuals Selected</div><div class="card-value">{ind_sel}</div><div class="card-footer">{hr_sel} High + {mr_sel} Medium</div></div>', unsafe_allow_html=True)
+
 
         st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
 

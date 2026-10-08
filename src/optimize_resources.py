@@ -110,16 +110,20 @@ def solve_resource_allocation(df, capacity_hours, verbose=False):
     metrics = {
         'status': status_str,
         'available_hours': int(capacity_hours),
-        'allocated_hours': allocated_hours,
-        'unused_hours': unused_hours,
-        'individuals_selected': individuals_selected,
-        'high_risk_selected': high_risk_selected,
-        'medium_risk_selected': medium_risk_selected,
-        'low_risk_selected': low_risk_selected,
-        'risk_score_addressed': risk_score_addressed,
-        'total_cohort_demand': total_cohort_demand,
-        'demand_coverage_percentage': demand_coverage_pct,
-        'resource_utilization_percentage': resource_utilization_pct
+        'allocated_hours': int(allocated_hours),
+        'unused_hours': int(unused_hours),
+        'individuals_selected': int(individuals_selected),
+        'selected_individuals': int(individuals_selected),
+        'selected_count': int(individuals_selected),
+        'num_selected': int(individuals_selected),
+        'total_selected': int(individuals_selected),
+        'high_risk_selected': int(high_risk_selected),
+        'medium_risk_selected': int(medium_risk_selected),
+        'low_risk_selected': int(low_risk_selected),
+        'risk_score_addressed': round(float(risk_score_addressed), 2),
+        'total_cohort_demand': int(total_cohort_demand),
+        'demand_coverage_percentage': round(float(demand_coverage_pct), 2),
+        'resource_utilization_percentage': round(float(resource_utilization_pct), 2)
     }
 
     return status_str, results_df, metrics
