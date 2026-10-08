@@ -270,3 +270,32 @@ metrics_json_path = os.path.join('outputs', 'model_metrics.json')
 with open(metrics_json_path, 'w', encoding='utf-8') as f:
     json.dump(metrics_dict, f, indent=4)
 print(f"Saved model metrics to {metrics_json_path}")
+
+# ==========================================
+# 10. GENERATE REAL TEST SUBSETS FOR INFERENCE TESTING
+# ==========================================
+# Requirement 14: Actual rows from official dataset without fabrication
+test_25_df = df.iloc[:25].copy()
+test_50_df = df.iloc[:50].copy()
+test_100_df = df.iloc[:100].copy()
+
+# Subset without target column
+test_25_no_target_df = test_25_df.drop(columns=[TARGET_COL] if TARGET_COL in test_25_df.columns else []).copy()
+
+test_25_path = os.path.join('data', 'test_real_25.csv')
+test_50_path = os.path.join('data', 'test_real_50.csv')
+test_100_path = os.path.join('data', 'test_real_100.csv')
+test_25_no_target_path = os.path.join('data', 'test_real_25_no_target.csv')
+
+test_25_df.to_csv(test_25_path, index=False)
+test_50_df.to_csv(test_50_path, index=False)
+test_100_df.to_csv(test_100_path, index=False)
+test_25_no_target_df.to_csv(test_25_no_target_path, index=False)
+
+print(f"Generated real test subsets from official records:")
+print(f"  - {test_25_path} (25 real rows with target)")
+print(f"  - {test_50_path} (50 real rows with target)")
+print(f"  - {test_100_path} (100 real rows with target)")
+print(f"  - {test_25_no_target_path} (25 real rows without target)")
+
+
