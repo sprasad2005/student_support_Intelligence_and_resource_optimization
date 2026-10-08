@@ -1,273 +1,272 @@
 import os
-import joblib
-import numpy as np
+import json
 import pandas as pd
-from sklearn.compose import ColumnTransformer
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+import numpy as np
+import joblib
+
 from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import OneHotEncoder
+from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
+from sklearn.impute import SimpleImputer
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    roc_auc_score,
+    confusion_matrix,
+    classification_report
+)
 
+# ==========================================
+# 1. LOAD DATASET
+# ==========================================
+DATA_PATH = os.path.join('data', 'autism_screening_data.csv')
+if not os.path.exists(DATA_PATH):
+    raise FileNotFoundError(f"Dataset not found at {DATA_PATH}")
 
-def main():
-    # 1. Locate and load dataset
-    dataset_paths = [
-        os.path.join(os.getcwd(), 'student+performance', 'student', 'student-mat.csv'),
-        os.path.join(os.getcwd(), 'student-mat.csv'),
-        os.path.join(os.path.dirname(__file__), '..', 'student+performance', 'student', 'student-mat.csv')
-    ]
-    
-    data_path = None
-    for p in dataset_paths:
-        if os.path.exists(p):
-            data_path = os.path.abspath(p)
+df = pd.read_csv(DATA_PATH)
+print(f"Loaded dataset: {df.shape[0]} rows, {df.shape[1]} columns.")
+
+# ==========================================
+# 2. DEFINE FEATURES & TARGET
+# ==========================================
+# Target column: 'Class/ASD' ('YES' -> 1, 'NO' -> 0)
+TARGET_COL = 'Class/ASD'
+if TARGET_COL not in df.columns:
+    # Check alternate naming
+    for c in df.columns:
+        if 'class' in c.lower() or 'asd' in c.lower():
+            TARGET_COL = c
             break
-            
-    if not data_path:
-        raise FileNotFoundError("Could not find student-mat.csv in expected locations.")
 
-    print(f"Loading dataset from: {data_path}")
-    df = pd.read_csv(data_path, sep=';')
-    print(f"Dataset shape: {df.shape[0]} rows, {df.shape[1]} columns")
+df[TARGET_COL] = df[TARGET_COL].astype(str).str.strip().str.upper()
+y = df[TARGET_COL].map({'YES': 1, 'NO': 0, '1': 1, '0': 0})
+if y.isnull().any():
+    # Fill any unmapped with 0
+    y = y.fillna(0).astype(int)
 
-    # 2. Separate features (X) and target (y)
-    target_col = 'G3'
-    if target_col not in df.columns:
-        raise ValueError(f"Target column '{target_col}' not found in dataset.")
+# 10 AQ-10 screening item scores
+AQ10_COLS = [f'A{i}_Score' for i in range(1, 11)]
 
-    X = df.drop(columns=[target_col])
-    y = df[target_col]
+# Numeric features
+NUM_COLS = ['age']
 
-    # Automatically identify categorical and numeric features
-    cat_cols = X.select_dtypes(include=['object', 'category', 'string']).columns.tolist()
-    num_cols = X.select_dtypes(include=['number']).columns.tolist()
+# Categorical features
+CAT_COLS = [
+    'gender',
+    'ethnicity',
+    'jundice',
+    'austim',
+    'contry_of_res',
+    'used_app_before',
+    'relation'
+]
 
-    print(f"Identified {len(cat_cols)} categorical columns: {cat_cols}")
-    print(f"Identified {len(num_cols)} numerical columns: {num_cols}")
+FEATURE_COLS = AQ10_COLS + NUM_COLS + CAT_COLS
 
-    # 3. Build Preprocessor and Pipeline
-    preprocessor = ColumnTransformer(
-        transformers=[
-            ('cat', OneHotEncoder(handle_unknown='ignore', sparse_output=False), cat_cols),
-            ('num', 'passthrough', num_cols)
-        ]
-    )
+X = df[FEATURE_COLS].copy()
 
-    model = RandomForestRegressor(
-        n_estimators=200,
-        random_state=42,
-        n_jobs=-1,
-        max_depth=None
-    )
+# Clean numeric values: convert '?' to NaN
+for col in NUM_COLS + AQ10_COLS:
+    X[col] = pd.to_numeric(X[col].replace('?', np.nan), errors='coerce')
 
-    pipeline = Pipeline(
-        steps=[
-            ('preprocessor', preprocessor),
-            ('regressor', model)
-        ]
-    )
+# Clean categorical values: replace '?' with 'Unknown'
+for col in CAT_COLS:
+    X[col] = X[col].replace('?', 'Unknown').fillna('Unknown').astype(str).str.strip()
 
-    # 4. Train/Test Split
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.20, random_state=42
-    )
-    print(f"Training set: {X_train.shape[0]} samples, Test set: {X_test.shape[0]} samples")
+# Cap realistic adult age (e.g. 18 to 100, replace outliers like 383 with median)
+median_age = X['age'].median()
+X.loc[(X['age'] < 1) | (X['age'] > 100), 'age'] = median_age
 
-    # 5. Train Model
-    print("Training RandomForestRegressor pipeline...")
-    pipeline.fit(X_train, y_train)
-    print("Training complete.")
+print(f"Features: {len(FEATURE_COLS)} total ({len(AQ10_COLS)} AQ-10, {len(NUM_COLS)} numeric, {len(CAT_COLS)} categorical)")
 
-    # 6. Evaluate Model on Test Set
-    y_test_pred = pipeline.predict(X_test)
-    mae = mean_absolute_error(y_test, y_test_pred)
-    try:
-        rmse = mean_squared_error(y_test, y_test_pred, squared=False)
-    except TypeError:
-        # For newer scikit-learn root_mean_squared_error
-        from sklearn.metrics import root_mean_squared_error
-        rmse = root_mean_squared_error(y_test, y_test_pred)
-    r2 = r2_score(y_test, y_test_pred)
+# ==========================================
+# 3. TRAIN / TEST SPLIT (STRATIFIED)
+# ==========================================
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y,
+    test_size=0.20,
+    random_state=42,
+    stratify=y
+)
 
-    actual_mean_test = np.mean(y_test)
-    pred_mean_test = np.mean(y_test_pred)
-    pred_min_test = np.min(y_test_pred)
-    pred_max_test = np.max(y_test_pred)
+print(f"Train size: {len(X_train)} (ASD: {y_train.sum()}), Test size: {len(X_test)} (ASD: {y_test.sum()})")
 
-    print("\n" + "="*40)
-    print("===== MODEL PERFORMANCE (TEST SET) =====")
-    print("="*40)
-    print(f"MAE  : {mae:.4f}")
-    print(f"RMSE : {rmse:.4f}")
-    print(f"R²   : {r2:.4f}")
-    print(f"\nActual Mean G3    : {actual_mean_test:.4f}")
-    print(f"Predicted Mean G3 : {pred_mean_test:.4f}")
-    print(f"Predicted Min     : {pred_min_test:.4f}")
-    print(f"Predicted Max     : {pred_max_test:.4f}")
-    print("="*40)
+# ==========================================
+# 4. PREPROCESSING & PIPELINE
+# ==========================================
+aq_transformer = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='most_frequent'))
+])
 
-    # 7. Generate Predictions on the Entire Dataset (395 students)
-    full_preds = pipeline.predict(X)
-    full_preds_rounded = np.round(full_preds, 2)
+num_transformer = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='median'))
+])
 
-    # Assign Sequential Student IDs
-    student_ids = [f"STU{i+1:03d}" for i in range(len(df))]
+cat_transformer = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='constant', fill_value='Unknown')),
+    ('onehot', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
+])
 
-    # Risk Classification Rules
-    def assign_risk_level(pred_grade):
-        if pred_grade < 10.0:
-            return "High Risk"
-        elif pred_grade <= 13.0:
-            return "Medium Risk"
-        else:
-            return "Low Risk"
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('aq', aq_transformer, AQ10_COLS),
+        ('num', num_transformer, NUM_COLS),
+        ('cat', cat_transformer, CAT_COLS)
+    ]
+)
 
-    risk_levels = [assign_risk_level(p) for p in full_preds_rounded]
+rf_classifier = RandomForestClassifier(
+    n_estimators=200,
+    max_depth=None,
+    min_samples_split=2,
+    min_samples_leaf=1,
+    random_state=42,
+    n_jobs=-1,
+    class_weight='balanced'
+)
 
-    # Risk Score Calculation: 100 - 5 * predicted_grade
-    risk_scores = np.round(100.0 - (5.0 * full_preds_rounded), 2)
+pipeline = Pipeline(steps=[
+    ('preprocessor', preprocessor),
+    ('classifier', rf_classifier)
+])
 
-    # Support Demand Hours Mapping
-    support_demand_mapping = {
-        "High Risk": 5,
-        "Medium Risk": 2,
-        "Low Risk": 0
-    }
-    support_demand_hours = [support_demand_mapping[lvl] for lvl in risk_levels]
+# ==========================================
+# 5. TRAIN MODEL
+# ==========================================
+pipeline.fit(X_train, y_train)
+print("Model training complete.")
 
-    # Construct Predictions DataFrame (including all student features for downstream context)
-    predictions_df = pd.DataFrame({
-        'student_id': student_ids,
-        'actual_grade': df['G3'],
-        'predicted_grade': full_preds_rounded,
-        'risk_level': risk_levels,
-        'risk_score': risk_scores,
-        'support_demand_hours': support_demand_hours
-    })
+# ==========================================
+# 6. EVALUATION ON TEST SET
+# ==========================================
+y_pred = pipeline.predict(X_test)
+y_prob = pipeline.predict_proba(X_test)[:, 1]
 
-    # Combine with original features
-    for col in X.columns:
-        predictions_df[col] = df[col]
+acc = accuracy_score(y_test, y_pred)
+prec = precision_score(y_test, y_pred, zero_division=0)
+rec = recall_score(y_test, y_pred, zero_division=0)
+f1 = f1_score(y_test, y_pred, zero_division=0)
+roc_auc = roc_auc_score(y_test, y_prob)
+cm = confusion_matrix(y_test, y_pred)
 
-    # 8. Save Model and Predictions
-    os.makedirs('outputs', exist_ok=True)
-    os.makedirs('models', exist_ok=True)
+print("\n" + "="*40)
+print("TEST SET CLASSIFICATION METRICS")
+print("="*40)
+print(f"Accuracy:  {acc:.4f}")
+print(f"Precision: {prec:.4f}")
+print(f"Recall:    {rec:.4f}  (Screening Sensitivity)")
+print(f"F1-Score:  {f1:.4f}")
+print(f"ROC-AUC:   {roc_auc:.4f}")
+print("\nConfusion Matrix:")
+print(cm)
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred, target_names=['Non-ASD (0)', 'ASD (1)']))
 
-    predictions_path = os.path.join('outputs', 'predictions.csv')
-    predictions_df.to_csv(predictions_path, index=False)
-    print(f"\nSaved predictions to: {predictions_path}")
+# ==========================================
+# 7. EXTRACT FEATURE IMPORTANCES
+# ==========================================
+preproc_fitted = pipeline.named_steps['preprocessor']
+cat_encoder = preproc_fitted.named_transformers_['cat'].named_steps['onehot']
+cat_encoded_names = list(cat_encoder.get_feature_names_out(CAT_COLS))
 
-    model_path = os.path.join('models', 'student_performance_rf.joblib')
-    joblib.dump(pipeline, model_path)
-    print(f"Saved trained pipeline to: {model_path}")
+all_feature_names = AQ10_COLS + NUM_COLS + cat_encoded_names
+importances = pipeline.named_steps['classifier'].feature_importances_
 
-    # 9. Extract and Save Feature Importance
-    rf_regressor = pipeline.named_steps['regressor']
-    fitted_preprocessor = pipeline.named_steps['preprocessor']
-    
-    # Get feature names after one-hot encoding
-    cat_encoder = fitted_preprocessor.named_transformers_['cat']
-    encoded_cat_names = cat_encoder.get_feature_names_out(cat_cols).tolist()
-    all_feature_names = encoded_cat_names + num_cols
-    
-    importances = rf_regressor.feature_importances_
-    feat_imp_df = pd.DataFrame({
-        'feature': all_feature_names,
-        'importance': importances
-    }).sort_values(by='importance', ascending=False).reset_index(drop=True)
+feat_imp_df = pd.DataFrame({
+    'feature': all_feature_names,
+    'importance': importances
+}).sort_values(by='importance', ascending=False)
 
-    feat_imp_path = os.path.join('outputs', 'feature_importance.csv')
-    feat_imp_df.to_csv(feat_imp_path, index=False)
-    print(f"Saved feature importances to: {feat_imp_path}")
+os.makedirs('outputs', exist_ok=True)
+os.makedirs('models', exist_ok=True)
 
-    # 10. Summary Statistics
-    print("\n" + "="*40)
-    print("===== SUMMARY STATISTICS =====")
-    print("="*40)
-    high_count = sum(1 for r in risk_levels if r == "High Risk")
-    med_count = sum(1 for r in risk_levels if r == "Medium Risk")
-    low_count = sum(1 for r in risk_levels if r == "Low Risk")
-    
-    print("### Risk Distribution:")
-    print(f"High Risk    : {high_count} students ({high_count/len(df)*100:.2f}%)")
-    print(f"Medium Risk  : {med_count} students ({med_count/len(df)*100:.2f}%)")
-    print(f"Low Risk     : {low_count} students ({low_count/len(df)*100:.2f}%)")
+feat_imp_path = os.path.join('outputs', 'feature_importance.csv')
+feat_imp_df.to_csv(feat_imp_path, index=False)
+print(f"\nSaved feature importance to {feat_imp_path}")
+print("Top 10 Most Influential Features:")
+print(feat_imp_df.head(10))
 
-    high_hours = high_count * 5
-    med_hours = med_count * 2
-    low_hours = low_count * 0
-    total_hours = sum(support_demand_hours)
+# ==========================================
+# 8. SAVE TRAINED MODEL ARTIFACT
+# ==========================================
+model_path = os.path.join('models', 'asd_risk_model.joblib')
+joblib.dump(pipeline, model_path)
+print(f"\nSaved trained Random Forest Classifier pipeline to {model_path}")
 
-    print("\n### Support Demand:")
-    print(f"High Risk Support Hours   : {high_hours} hours")
-    print(f"Medium Risk Support Hours : {med_hours} hours")
-    print(f"Low Risk Support Hours    : {low_hours} hours")
-    print(f"Total Support Demand      : {total_hours} hours")
+# ==========================================
+# 9. SAVE BASELINE TEST PREDICTIONS
+# ==========================================
+# Generate predictions for the full dataset for reference
+full_preds = pipeline.predict(X)
+full_probs = np.round(pipeline.predict_proba(X)[:, 1], 4)
 
-    print("\n### Full Dataset Prediction Stats:")
-    print(f"Average Predicted Grade   : {np.mean(full_preds_rounded):.2f}")
-    print(f"Minimum Predicted Grade   : {np.min(full_preds_rounded):.2f}")
-    print(f"Maximum Predicted Grade   : {np.max(full_preds_rounded):.2f}")
+# Risk Category Mapping:
+# Prob < 0.30 -> Low Risk (0h)
+# 0.30 <= Prob < 0.70 -> Medium Risk (2h)
+# Prob >= 0.70 -> High Risk (5h)
+def map_risk_category(p):
+    if p < 0.30:
+        return 'Low Risk'
+    elif p < 0.70:
+        return 'Medium Risk'
+    else:
+        return 'High Risk'
 
-    print("\n### Top 10 Important Features:")
-    for idx, row in feat_imp_df.head(10).iterrows():
-        print(f"{idx+1:2d}. {row['feature']:<25} : {row['importance']:.4f} ({row['importance']*100:.2f}%)")
+def map_support_demand(r):
+    if r == 'High Risk':
+        return 5
+    elif r == 'Medium Risk':
+        return 2
+    else:
+        return 0
 
-    # 11. Automated Validation Checks
-    print("\n" + "="*40)
-    print("===== RUNNING VALIDATION CHECKS =====")
-    print("="*40)
-    checks_passed = True
+risk_categories = [map_risk_category(p) for p in full_probs]
+support_demands = [map_support_demand(r) for r in risk_categories]
+risk_scores = np.round(full_probs * 100.0, 2)
 
-    # 1. Dataset contains 395 students
-    assert len(df) == 395, f"Check 1 Failed: Expected 395 rows, got {len(df)}"
-    print("[PASS] Check 1: Dataset contains exactly 395 students.")
+ids = [f"IND{i+1:03d}" for i in range(len(df))]
 
-    # 2. Prediction count is 395
-    assert len(predictions_df) == 395, f"Check 2 Failed: Expected 395 predictions, got {len(predictions_df)}"
-    print("[PASS] Check 2: Prediction count is 395.")
+predictions_df = pd.DataFrame({
+    'individual_id': ids,
+    'asd_probability': full_probs,
+    'predicted_class': full_preds,
+    'actual_class': y.values,
+    'risk_category': risk_categories,
+    'risk_score': risk_scores,
+    'support_demand_hours': support_demands
+})
 
-    # 3. No missing predicted grades
-    assert predictions_df['predicted_grade'].isnull().sum() == 0, "Check 3 Failed: Missing predicted grades."
-    print("[PASS] Check 3: No missing predicted grades.")
+# Include key raw feature columns for exploration
+for c in df.columns:
+    if c not in predictions_df.columns:
+        predictions_df[c] = df[c]
 
-    # 4. No missing risk levels
-    assert predictions_df['risk_level'].isnull().sum() == 0, "Check 4 Failed: Missing risk levels."
-    print("[PASS] Check 4: No missing risk levels.")
+preds_csv_path = os.path.join('outputs', 'predictions.csv')
+predictions_df.to_csv(preds_csv_path, index=False)
+print(f"Saved baseline predictions to {preds_csv_path}")
 
-    # 5. Every risk level is valid
-    valid_risk_levels = {"High Risk", "Medium Risk", "Low Risk"}
-    actual_risk_levels = set(predictions_df['risk_level'].unique())
-    assert actual_risk_levels.issubset(valid_risk_levels), f"Check 5 Failed: Invalid risk levels: {actual_risk_levels}"
-    print("[PASS] Check 5: Every risk level is one of {High Risk, Medium Risk, Low Risk}.")
+# Save metrics JSON for dashboard display
+metrics_dict = {
+    "accuracy": round(float(acc), 4),
+    "precision": round(float(prec), 4),
+    "recall": round(float(rec), 4),
+    "f1_score": round(float(f1), 4),
+    "roc_auc": round(float(roc_auc), 4),
+    "confusion_matrix": cm.tolist(),
+    "n_estimators": 200,
+    "train_samples": len(X_train),
+    "test_samples": len(X_test),
+    "total_samples": len(df),
+    "aq10_features": AQ10_COLS,
+    "num_features": NUM_COLS,
+    "cat_features": CAT_COLS
+}
 
-    # 6. Support demand values are only {0, 2, 5}
-    valid_support_hours = {0, 2, 5}
-    actual_support_hours = set(predictions_df['support_demand_hours'].unique())
-    assert actual_support_hours.issubset(valid_support_hours), f"Check 6 Failed: Invalid support demand hours: {actual_support_hours}"
-    print("[PASS] Check 6: Support demand values are strictly in {0, 2, 5}.")
-
-    # 7. predicted_grade is numeric
-    assert pd.api.types.is_numeric_dtype(predictions_df['predicted_grade']), "Check 7 Failed: predicted_grade is not numeric."
-    print("[PASS] Check 7: predicted_grade is numeric.")
-
-    # 8. Model file exists
-    assert os.path.exists(model_path), f"Check 8 Failed: Model file {model_path} does not exist."
-    print(f"[PASS] Check 8: Model file exists at {model_path}.")
-
-    # 9. predictions.csv exists
-    assert os.path.exists(predictions_path), f"Check 9 Failed: Predictions file {predictions_path} does not exist."
-    print(f"[PASS] Check 9: predictions.csv exists at {predictions_path}.")
-
-    # 10. feature_importance.csv exists
-    assert os.path.exists(feat_imp_path), f"Check 10 Failed: Feature importance file {feat_imp_path} does not exist."
-    print(f"[PASS] Check 10: feature_importance.csv exists at {feat_imp_path}.")
-
-    print("="*40)
-    print("ALL 10 VALIDATION CHECKS PASSED SUCCESSFULLY!")
-    print("="*40)
-
-
-if __name__ == "__main__":
-    main()
+metrics_json_path = os.path.join('outputs', 'model_metrics.json')
+with open(metrics_json_path, 'w', encoding='utf-8') as f:
+    json.dump(metrics_dict, f, indent=4)
+print(f"Saved model metrics to {metrics_json_path}")

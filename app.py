@@ -23,11 +23,24 @@ except ImportError:
 # PAGE CONFIGURATION
 # ==========================================
 st.set_page_config(
-    page_title="EduRisk — Student Support Intelligence",
+    page_title="NeuroRisk — ASD Screening & Support Intelligence",
     page_icon="◈",
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+
+# ==========================================
+# CONFIGURABLE CONSTANTS (ASD DOMAIN)
+# ==========================================
+# Screening Risk Probability Thresholds
+THRESHOLD_LOW_RISK = 0.30     # ASD Probability < 0.30 -> Low Risk
+THRESHOLD_HIGH_RISK = 0.70    # ASD Probability >= 0.70 -> High Risk (0.30 <= P < 0.70 -> Medium Risk)
+
+# Project Resource Allocation Assumptions (Support Hours / Week)
+SUPPORT_HOURS_HIGH_RISK = 5   # Intensive specialist support
+SUPPORT_HOURS_MED_RISK = 2    # Structured periodic review
+SUPPORT_HOURS_LOW_RISK = 0    # Routine standard monitoring
 
 
 # ==========================================
@@ -81,7 +94,7 @@ st.markdown(
     section[data-testid="stSidebar"] {
         background-color: var(--bg-sidebar) !important;
         border-right: 1px solid var(--border-color) !important;
-        width: 250px !important;
+        width: 255px !important;
     }
 
     section[data-testid="stSidebar"] .block-container {
@@ -150,53 +163,47 @@ st.markdown(
         font-size: 13.5px !important;
         font-weight: 500 !important;
         color: var(--text-secondary) !important;
-        background-color: transparent !important;
-        cursor: pointer !important;
-        transition: all 0.15s ease !important;
-        margin: 0 !important;
+        transition: all 0.12s ease;
     }
 
     section[data-testid="stSidebar"] div[data-testid="stRadio"] label:hover {
-        background-color: var(--bg-elevated) !important;
+        background-color: var(--bg-hover) !important;
         color: var(--text-primary) !important;
     }
 
     section[data-testid="stSidebar"] div[data-testid="stRadio"] label[data-checked="true"] {
-        background-color: var(--bg-hover) !important;
-        color: #ffffff !important;
+        background-color: var(--bg-elevated) !important;
+        color: var(--text-primary) !important;
         font-weight: 600 !important;
-        border-left: 2px solid var(--accent-indigo) !important;
+        border-left: 3px solid var(--accent-indigo) !important;
     }
 
-    section[data-testid="stSidebar"] div[data-testid="stRadio"] label > div:first-child {
-        display: none !important;
-    }
-
-    /* Active Dataset Status Box */
+    /* Sidebar Active Dataset Indicator */
     .dataset-status-card {
         background: var(--bg-card);
         border: 1px solid var(--border-color);
         border-radius: 8px;
-        padding: 10px 12px;
-        margin-top: 12px;
+        padding: 0.75rem 0.875rem;
+        margin-top: 0.25rem;
+        margin-bottom: 0.5rem;
     }
 
     .dataset-status-label {
-        font-size: 10px;
+        font-size: 11px;
         font-weight: 700;
         color: var(--text-muted);
         text-transform: uppercase;
         letter-spacing: 0.05em;
         display: flex;
         align-items: center;
-        gap: 5px;
+        gap: 6px;
     }
 
     .dataset-status-name {
-        font-size: 12.5px;
+        font-size: 13px;
         font-weight: 600;
         color: var(--text-primary);
-        margin-top: 2px;
+        margin-top: 3px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -208,12 +215,12 @@ st.markdown(
         margin-top: 2px;
     }
 
-    /* Compact Top Header */
+    /* Top Page Header */
     .top-header {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        padding-bottom: 1.1rem;
+        padding-bottom: 1.25rem;
         margin-bottom: 1.5rem;
         border-bottom: 1px solid var(--border-color);
     }
@@ -222,24 +229,24 @@ st.markdown(
         font-size: 22px;
         font-weight: 700;
         color: var(--text-primary);
-        letter-spacing: -0.02em;
+        letter-spacing: -0.025em;
         margin: 0;
     }
 
     .top-header-subtitle {
         font-size: 13.5px;
         color: var(--text-secondary);
-        margin-top: 3px;
+        margin-top: 4px;
         margin-bottom: 0;
     }
 
-    /* Dark SaaS Cards */
+    /* Standard Dark Metric Cards */
     .card {
         background: var(--bg-card);
         border: 1px solid var(--border-color);
         border-radius: 10px;
-        padding: 1.2rem;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+        padding: 1.125rem 1.25rem;
+        position: relative;
     }
 
     .card-label {
@@ -248,7 +255,7 @@ st.markdown(
         color: var(--text-muted);
         text-transform: uppercase;
         letter-spacing: 0.06em;
-        margin-bottom: 4px;
+        margin-bottom: 6px;
     }
 
     .card-value {
@@ -256,47 +263,47 @@ st.markdown(
         font-weight: 700;
         color: var(--text-primary);
         letter-spacing: -0.02em;
-        line-height: 1.15;
+        line-height: 1.1;
     }
 
     .card-footer {
-        font-size: 12px;
+        font-size: 11.5px;
         color: var(--text-secondary);
         margin-top: 6px;
     }
 
-    /* Semantic Status Badges */
+    /* Semantic Badges */
     .badge {
         display: inline-flex;
         align-items: center;
-        gap: 4px;
-        padding: 2px 8px;
-        border-radius: 9999px;
+        gap: 5px;
+        padding: 2px 7px;
+        border-radius: 4px;
         font-size: 11px;
         font-weight: 600;
-        line-height: 1.2;
+        letter-spacing: 0.02em;
     }
 
     .badge-high {
-        background-color: rgba(239, 68, 68, 0.12);
+        background: rgba(239, 68, 68, 0.12);
         color: #F87171;
         border: 1px solid rgba(239, 68, 68, 0.25);
     }
 
     .badge-medium {
-        background-color: rgba(245, 158, 11, 0.12);
+        background: rgba(245, 158, 11, 0.12);
         color: #FBBF24;
         border: 1px solid rgba(245, 158, 11, 0.25);
     }
 
     .badge-low {
-        background-color: rgba(34, 197, 94, 0.12);
+        background: rgba(34, 197, 94, 0.12);
         color: #4ADE80;
         border: 1px solid rgba(34, 197, 94, 0.25);
     }
 
     .badge-neutral {
-        background-color: var(--bg-elevated);
+        background: var(--bg-elevated);
         color: var(--text-secondary);
         border: 1px solid var(--border-color);
     }
@@ -327,9 +334,22 @@ st.markdown(
         margin-top: 6px;
     }
 
+    /* Ethical & Medical Disclaimer Banner */
+    .disclaimer-box {
+        background: rgba(99, 102, 241, 0.05);
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        border-left: 4px solid var(--accent-indigo);
+        border-radius: 8px;
+        padding: 0.875rem 1.125rem;
+        font-size: 12.5px;
+        color: var(--text-secondary);
+        line-height: 1.5;
+        margin-top: 1.25rem;
+    }
+
     /* Empty State & Centered Upload Containers */
     .empty-state-box {
-        max-width: 580px;
+        max-width: 600px;
         margin: 2.5rem auto;
         background: var(--bg-card);
         border: 1px solid var(--border-color);
@@ -450,25 +470,11 @@ st.markdown(
         border-radius: 6px !important;
     }
 
-    div[data-baseweb="slider"] {
-        color: var(--accent-indigo) !important;
-    }
-
+    /* Dataframe Dark Container */
     div[data-testid="stDataFrame"] {
         border: 1px solid var(--border-color) !important;
         border-radius: 8px !important;
         background: var(--bg-card) !important;
-    }
-
-    .scope-box {
-        background-color: var(--bg-card);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        padding: 1rem 1.25rem;
-        font-size: 12.5px;
-        color: var(--text-secondary);
-        line-height: 1.55;
-        margin-top: 1.5rem;
     }
     </style>
     """,
@@ -477,26 +483,22 @@ st.markdown(
 
 
 # ==========================================
-# MODEL & PIPELINE LOADER
+# MODEL ARTIFACT LOADING & SCHEMA DEFINITION
 # ==========================================
 @st.cache_resource
 def load_trained_pipeline():
-    model_path = os.path.join('models', 'student_performance_rf.joblib')
+    model_path = os.path.join('models', 'asd_risk_model.joblib')
     if not os.path.exists(model_path):
-        return None, [], []
-    
-    pipeline = joblib.load(model_path)
-    preprocessor = pipeline.named_steps.get('preprocessor')
-    cat_cols = []
-    num_cols = []
-    if preprocessor is not None:
-        for name, transformer, cols in preprocessor.transformers_:
-            if name == 'cat':
-                cat_cols = list(cols)
-            elif name == 'num':
-                num_cols = list(cols)
-                
-    return pipeline, cat_cols, num_cols
+        return None, [], [], []
+    try:
+        pipeline = joblib.load(model_path)
+        aq10_cols = [f'A{i}_Score' for i in range(1, 11)]
+        num_cols = ['age']
+        cat_cols = ['gender', 'ethnicity', 'jundice', 'austim', 'contry_of_res', 'used_app_before', 'relation']
+        return pipeline, aq10_cols, num_cols, cat_cols
+    except Exception as e:
+        st.error(f"Error loading model artifact: {str(e)}")
+        return None, [], [], []
 
 
 @st.cache_data
@@ -507,9 +509,22 @@ def load_feature_importance():
     return None
 
 
-pipeline_model, EXPECTED_CAT_COLS, EXPECTED_NUM_COLS = load_trained_pipeline()
-ALL_EXPECTED_FEATURES = set(EXPECTED_CAT_COLS + EXPECTED_NUM_COLS)
+@st.cache_data
+def load_model_metrics():
+    metrics_path = os.path.join('outputs', 'model_metrics.json')
+    if os.path.exists(metrics_path):
+        try:
+            with open(metrics_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception:
+            return None
+    return None
+
+
+pipeline_model, EXPECTED_AQ_COLS, EXPECTED_NUM_COLS, EXPECTED_CAT_COLS = load_trained_pipeline()
+ALL_EXPECTED_FEATURES = set(EXPECTED_AQ_COLS + EXPECTED_NUM_COLS + EXPECTED_CAT_COLS)
 cached_feat_imp = load_feature_importance()
+cached_metrics = load_model_metrics()
 
 
 # ==========================================
@@ -517,6 +532,7 @@ cached_feat_imp = load_feature_importance()
 # ==========================================
 HISTORY_FILE = os.path.join('outputs', 'analysis_history.json')
 HISTORY_DIR = os.path.join('outputs', 'history')
+
 
 def load_analysis_history():
     if not os.path.exists(HISTORY_FILE):
@@ -527,6 +543,7 @@ def load_analysis_history():
             return data if isinstance(data, list) else []
     except Exception:
         return []
+
 
 def save_analysis_to_history(dataset_name, source_type, preds_df, alloc_df, metrics, capacity):
     os.makedirs(HISTORY_DIR, exist_ok=True)
@@ -545,9 +562,10 @@ def save_analysis_to_history(dataset_name, source_type, preds_df, alloc_df, metr
     preds_df.to_csv(preds_path, index=False)
     alloc_df.to_csv(alloc_path, index=False)
     
-    high_count = int(len(preds_df[preds_df['risk_level'] == 'High Risk']))
-    med_count = int(len(preds_df[preds_df['risk_level'] == 'Medium Risk']))
-    low_count = int(len(preds_df[preds_df['risk_level'] == 'Low Risk']))
+    risk_col = 'risk_category' if 'risk_category' in preds_df.columns else 'risk_level'
+    high_count = int(len(preds_df[preds_df[risk_col] == 'High Risk']))
+    med_count = int(len(preds_df[preds_df[risk_col] == 'Medium Risk']))
+    low_count = int(len(preds_df[preds_df[risk_col] == 'Low Risk']))
     total_demand = int(preds_df['support_demand_hours'].sum())
     
     record = {
@@ -556,6 +574,7 @@ def save_analysis_to_history(dataset_name, source_type, preds_df, alloc_df, metr
         "source_type": source_type,
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "student_count": len(preds_df),
+        "individual_count": len(preds_df),
         "high_risk": high_count,
         "medium_risk": med_count,
         "low_risk": low_count,
@@ -563,7 +582,7 @@ def save_analysis_to_history(dataset_name, source_type, preds_df, alloc_df, metr
         "capacity": int(capacity),
         "allocated_hours": int(metrics.get('allocated_hours', 0)),
         "unused_hours": int(metrics.get('unused_hours', 0)),
-        "students_selected": int(metrics.get('students_selected', 0)),
+        "individuals_selected": int(metrics.get('individuals_selected', metrics.get('students_selected', 0))),
         "demand_coverage": float(metrics.get('demand_coverage_percentage', 0.0)),
         "predictions_file": preds_path,
         "allocation_file": alloc_path
@@ -577,6 +596,7 @@ def save_analysis_to_history(dataset_name, source_type, preds_df, alloc_df, metr
         json.dump(history, f, indent=4)
         
     return analysis_id
+
 
 def delete_analysis_from_history(analysis_id):
     history = load_analysis_history()
@@ -598,6 +618,7 @@ def delete_analysis_from_history(analysis_id):
     with open(HISTORY_FILE, 'w', encoding='utf-8') as f:
         json.dump(new_history, f, indent=4)
 
+
 def clear_all_history():
     history = load_analysis_history()
     for r in history:
@@ -618,49 +639,97 @@ def clear_all_history():
 
 
 # ==========================================
-# INFERENCE & OPTIMIZATION ENGINES
+# INFERENCE ENGINE (ASD CLASSIFICATION)
 # ==========================================
-def generate_predictions_from_model(df_input, model, cat_cols, num_cols):
-    id_candidates = [c for c in df_input.columns if c.lower() in ['student_id', 'studentid', 'id', 'student_code']]
+def generate_asd_predictions_from_model(df_input, model, aq_cols, num_cols, cat_cols):
+    """
+    Runs the trained Random Forest Classifier pipeline on an input DataFrame
+    to generate predicted ASD screening probabilities, risk tiers, and support demands.
+    """
+    # 1. Individual ID extraction or generation
+    id_candidates = [c for c in df_input.columns if c.lower() in ['individual_id', 'client_id', 'student_id', 'id', 'case_id', 'subject_id']]
     if id_candidates:
-        student_ids = df_input[id_candidates[0]].astype(str).tolist()
+        individual_ids = df_input[id_candidates[0]].astype(str).tolist()
     else:
-        student_ids = [f"STU{i+1:03d}" for i in range(len(df_input))]
+        individual_ids = [f"IND{i+1:03d}" for i in range(len(df_input))]
 
-    X_features = df_input[cat_cols + num_cols].copy()
-    for nc in num_cols:
-        X_features[nc] = pd.to_numeric(X_features[nc], errors='coerce').fillna(0)
+    # 2. Extract and sanitize feature matrix
+    X_features = pd.DataFrame(index=df_input.index)
+    
+    # AQ-10 features (clean numeric/binary)
+    for col in aq_cols:
+        if col in df_input.columns:
+            X_features[col] = pd.to_numeric(df_input[col].replace('?', np.nan), errors='coerce').fillna(0).astype(int)
+        else:
+            X_features[col] = 0
 
+    # Numeric features (age)
+    for col in num_cols:
+        if col in df_input.columns:
+            val = pd.to_numeric(df_input[col].replace('?', np.nan), errors='coerce')
+            med = val.median() if not val.isnull().all() else 25.0
+            val = val.fillna(med)
+            # Clip unrealistic age outliers
+            val = val.apply(lambda a: med if (a < 1 or a > 100) else a)
+            X_features[col] = val
+        else:
+            X_features[col] = 25.0
+
+    # Categorical features
+    for col in cat_cols:
+        if col in df_input.columns:
+            X_features[col] = df_input[col].replace('?', 'Unknown').fillna('Unknown').astype(str).str.strip()
+        else:
+            X_features[col] = 'Unknown'
+
+    # Ensure column order matches pipeline expectations
+    X_features = X_features[aq_cols + num_cols + cat_cols]
+
+    # 3. Model Inference (Probabilities & Classes)
+    probs = model.predict_proba(X_features)[:, 1]
+    probs_rounded = np.round(probs, 4)
     preds = model.predict(X_features)
-    preds_rounded = np.round(preds, 2)
 
+    # 4. Risk Classification Mapping
     def map_risk(p):
-        if p < 10.0:
-            return "High Risk"
-        elif p <= 13.0:
+        if p < THRESHOLD_LOW_RISK:
+            return "Low Risk"
+        elif p < THRESHOLD_HIGH_RISK:
             return "Medium Risk"
         else:
-            return "Low Risk"
+            return "High Risk"
 
-    risk_levels = [map_risk(p) for p in preds_rounded]
-    risk_scores = np.round(100.0 - (5.0 * preds_rounded), 2)
+    def map_support(r):
+        if r == "High Risk":
+            return SUPPORT_HOURS_HIGH_RISK
+        elif r == "Medium Risk":
+            return SUPPORT_HOURS_MED_RISK
+        else:
+            return SUPPORT_HOURS_LOW_RISK
 
-    demand_map = {"High Risk": 5, "Medium Risk": 2, "Low Risk": 0}
-    support_demand = [demand_map[r] for r in risk_levels]
+    risk_categories = [map_risk(p) for p in probs_rounded]
+    support_demand = [map_support(r) for r in risk_categories]
+    risk_scores = np.round(probs_rounded * 100.0, 2)
 
     out_df = pd.DataFrame({
-        'student_id': student_ids,
-        'predicted_grade': preds_rounded,
-        'risk_level': risk_levels,
+        'individual_id': individual_ids,
+        'asd_probability': probs_rounded,
+        'predicted_class': preds,
+        'risk_category': risk_categories,
         'risk_score': risk_scores,
         'support_demand_hours': support_demand
     })
 
-    if 'G3' in df_input.columns:
-        out_df['actual_grade'] = pd.to_numeric(df_input['G3'], errors='coerce')
-    else:
-        out_df['actual_grade'] = np.nan
+    # Backward compatibility alias
+    out_df['student_id'] = individual_ids
+    out_df['risk_level'] = risk_categories
 
+    # Retain ground truth target if available (for reference)
+    target_candidates = [c for c in df_input.columns if 'class' in c.lower() or 'asd' in c.lower()]
+    if target_candidates and target_candidates[0] in df_input.columns:
+        out_df['actual_target'] = df_input[target_candidates[0]].astype(str)
+
+    # Attach remaining original columns
     for c in df_input.columns:
         if c not in out_df.columns:
             out_df[c] = df_input[c]
@@ -693,26 +762,6 @@ if "nav_selection" not in st.session_state:
     st.session_state["nav_selection"] = "Overview"
 
 
-def load_demo_dataset():
-    demo_path = os.path.join('student+performance', 'student', 'student-mat.csv')
-    if not os.path.exists(demo_path):
-        demo_path = 'student-mat.csv'
-    raw_df = pd.read_csv(demo_path, sep=';')
-    preds_df = generate_predictions_from_model(raw_df, pipeline_model, EXPECTED_CAT_COLS, EXPECTED_NUM_COLS)
-    default_cap = 300
-    _, alloc_df, metrics = solve_resource_allocation(preds_df, default_cap)
-    
-    aid = save_analysis_to_history("UCI Student Performance (Math)", "Demo Dataset", preds_df, alloc_df, metrics, default_cap)
-    
-    st.session_state["active_dataset"] = preds_df
-    st.session_state["active_predictions"] = preds_df
-    st.session_state["active_dataset_name"] = "UCI Student Performance (Math)"
-    st.session_state["active_dataset_source"] = "Demo Dataset"
-    st.session_state["active_allocation"] = alloc_df
-    st.session_state["active_analysis_id"] = aid
-    st.session_state["nav_selection"] = "Overview"
-
-
 def clear_active_dataset():
     st.session_state["active_dataset"] = None
     st.session_state["active_predictions"] = None
@@ -732,8 +781,8 @@ with st.sidebar:
         <div class="brand-header">
             <div class="brand-badge">◈</div>
             <div>
-                <div class="brand-text">EduRisk</div>
-                <div class="brand-subtext">Student Intelligence</div>
+                <div class="brand-text">NeuroRisk</div>
+                <div class="brand-subtext">ASD Screening & OR Support</div>
             </div>
         </div>
         """,
@@ -744,9 +793,9 @@ with st.sidebar:
     
     nav_options = [
         "Overview",
-        "Risk Analysis",
-        "Resource Allocation",
-        "Student Explorer"
+        "ASD Risk Analysis",
+        "Support Resource Allocation",
+        "Individual Screening Explorer"
     ]
     
     workspace_nav = st.radio(
@@ -762,14 +811,14 @@ with st.sidebar:
     st.markdown('<div class="sidebar-category">DATA SOURCE</div>', unsafe_allow_html=True)
     
     if st.session_state["active_dataset"] is not None:
-        num_stu = len(st.session_state["active_dataset"])
+        num_ind = len(st.session_state["active_dataset"])
         total_dem = int(st.session_state["active_dataset"]['support_demand_hours'].sum())
         st.markdown(
             f"""
             <div class="dataset-status-card">
-                <div class="dataset-status-label"><span style="color:#22C55E;">●</span> Active Dataset</div>
+                <div class="dataset-status-label"><span style="color:#22C55E;">●</span> Active Screening Cohort</div>
                 <div class="dataset-status-name">{st.session_state["active_dataset_name"]}</div>
-                <div class="dataset-status-meta"><b>{num_stu}</b> students · <b>{total_dem}h</b> demand</div>
+                <div class="dataset-status-meta"><b>{num_ind}</b> individuals · <b>{total_dem}h</b> demand</div>
             </div>
             """,
             unsafe_allow_html=True
@@ -783,7 +832,7 @@ with st.sidebar:
         st.download_button(
             label="↓ Predictions CSV",
             data=pred_csv,
-            file_name=f"predictions_{st.session_state['active_dataset_name'].replace(' ', '_')}.csv",
+            file_name=f"asd_screening_predictions_{st.session_state['active_dataset_name'].replace(' ', '_')}.csv",
             mime="text/csv",
             use_container_width=True
         )
@@ -794,7 +843,7 @@ with st.sidebar:
         st.download_button(
             label="↓ Allocation Plan",
             data=alloc_csv,
-            file_name=f"allocation_{st.session_state['active_dataset_name'].replace(' ', '_')}.csv",
+            file_name=f"asd_resource_allocation_{st.session_state['active_dataset_name'].replace(' ', '_')}.csv",
             mime="text/csv",
             use_container_width=True
         )
@@ -803,12 +852,12 @@ with st.sidebar:
             """
             <div class="dataset-status-card">
                 <div class="dataset-status-label"><span style="color:#71717A;">○</span> No Dataset Active</div>
-                <div class="dataset-status-meta" style="margin-top:4px;">Upload a CSV to begin analysis.</div>
+                <div class="dataset-status-meta" style="margin-top:4px;">Upload an ASD screening CSV to begin analysis.</div>
             </div>
             """,
             unsafe_allow_html=True
         )
-        if st.button("+ Upload CSV", key="btn_quick_upload", use_container_width=True):
+        if st.button("+ Upload ASD CSV", key="btn_quick_upload", use_container_width=True):
             st.session_state["nav_selection"] = "Import Dataset"
             st.rerun()
 
@@ -824,7 +873,7 @@ with st.sidebar:
 
 
 # ==========================================
-# PAGE ROUTING & GUARDS
+# PAGE ROUTING & STATE ACCESS
 # ==========================================
 active_view = st.session_state["nav_selection"]
 current_predictions_df = st.session_state["active_dataset"]
@@ -839,8 +888,8 @@ if active_view == "Import Dataset":
         """
         <div class="top-header">
             <div>
-                <h1 class="top-header-title">Dataset Ingestion</h1>
-                <p class="top-header-subtitle">Import a student cohort CSV to generate predictions and optimize academic support.</p>
+                <h1 class="top-header-title">ASD Screening Cohort Ingestion</h1>
+                <p class="top-header-subtitle">Import an Autism Spectrum Disorder screening questionnaire CSV to estimate risk probabilities and optimize specialist support allocation.</p>
             </div>
             <span class="badge badge-neutral">● Ready for upload</span>
         </div>
@@ -852,8 +901,10 @@ if active_view == "Import Dataset":
         """
         <div class="upload-container">
             <div class="upload-icon">↑</div>
-            <div style="font-size: 16px; font-weight: 700; color: #F4F4F5; margin-bottom: 4px;">Import student data</div>
-            <div style="font-size: 13.5px; color: #A1A1AA; margin-bottom: 16px;">Upload a CSV containing your student cohort.<br>32 required features · G3 optional</div>
+            <div style="font-size: 16px; font-weight: 700; color: #F4F4F5; margin-bottom: 4px;">Upload ASD Screening CSV</div>
+            <div style="font-size: 13.5px; color: #A1A1AA; margin-bottom: 16px;">
+                Expected features: 10 AQ items (<code>A1_Score</code> to <code>A10_Score</code>), <code>age</code>, <code>gender</code>, <code>ethnicity</code>, <code>jundice</code>, <code>austim</code>, <code>contry_of_res</code>, <code>used_app_before</code>, <code>relation</code>.
+            </div>
         </div>
         """,
         unsafe_allow_html=True
@@ -876,17 +927,20 @@ if active_view == "Import Dataset":
             except Exception:
                 raw_df = pd.read_csv(io.BytesIO(bytes_data), sep=';')
 
+            # Clean column names (strip whitespace)
+            raw_df.columns = [c.strip() for c in raw_df.columns]
+
             missing_cols = [c for c in ALL_EXPECTED_FEATURES if c not in raw_df.columns]
             
             if missing_cols:
-                st.error(f"❌ **Dataset Missing {len(missing_cols)} Required Features:**")
+                st.error(f"❌ **Dataset Missing {len(missing_cols)} Required Screening Features:**")
                 st.markdown("\n".join([f"- `{col}`" for col in missing_cols]))
-                st.info("💡 Expected features include demographic, attendance, family, and prior milestone grades (G1, G2).")
+                st.info("💡 Expected schema includes AQ-10 screening scores (A1_Score to A10_Score), age, gender, ethnicity, jaundice, family history of autism, country, app usage, and relation.")
             elif pipeline_model is None:
-                st.error("Trained model artifact missing from `models/`.")
+                st.error("Trained ASD classifier artifact missing from `models/asd_risk_model.joblib`. Please run training first.")
             else:
-                preds_df = generate_predictions_from_model(
-                    raw_df, pipeline_model, EXPECTED_CAT_COLS, EXPECTED_NUM_COLS
+                preds_df = generate_asd_predictions_from_model(
+                    raw_df, pipeline_model, EXPECTED_AQ_COLS, EXPECTED_NUM_COLS, EXPECTED_CAT_COLS
                 )
                 total_dem = int(preds_df['support_demand_hours'].sum())
                 def_cap = min(300, total_dem) if total_dem > 0 else 0
@@ -905,20 +959,20 @@ if active_view == "Import Dataset":
                     f"""
                     <div class="card" style="border-left: 4px solid #22C55E; margin-top: 1rem;">
                         <div style="font-size: 14.5px; font-weight: 700; color: #F4F4F5; display: flex; justify-content: space-between; align-items: center;">
-                            <span style="color:#4ADE80;">✓ Dataset ready & Saved to History</span>
-                            <span class="badge badge-low">Prediction ready</span>
+                            <span style="color:#4ADE80;">✓ Screening Cohort processed & Saved to History</span>
+                            <span class="badge badge-low">Inference complete</span>
                         </div>
                         <div style="font-size: 13px; color: #A1A1AA; margin-top: 8px;">
-                            • File: <b>{uploaded_file.name}</b><br>
-                            • Size: <b>{len(preds_df)} students</b> · <b>32 features</b><br>
-                            • Model Inference: <b>Random Forest Regressor</b><br>
-                            • Support Demand: <b>{total_dem} hours / week</b>
+                            • Cohort File: <b>{uploaded_file.name}</b><br>
+                            • Individuals Screened: <b>{len(preds_df)}</b> · <b>18 screening features</b><br>
+                            • Classifier: <b>Random Forest Classifier (200 trees)</b><br>
+                            • Total Specialist Support Demand: <b>{total_dem} hours / week</b>
                         </div>
                     </div>
                     """,
                     unsafe_allow_html=True
                 )
-                if st.button("Run Analysis →", key="btn_run_analysis"):
+                if st.button("View Analysis Dashboard →", key="btn_run_analysis"):
                     st.session_state["nav_selection"] = "Overview"
                     st.rerun()
         except Exception as e:
@@ -928,27 +982,27 @@ if active_view == "Import Dataset":
     st.markdown(
         """
         <div style="margin-top: 2rem;">
-            <div style="font-size: 11px; font-weight: 700; color: #71717A; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">HOW IT WORKS</div>
+            <div style="font-size: 11px; font-weight: 700; color: #71717A; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">HOW THE ASD SCREENING & OPTIMIZATION PIPELINE WORKS</div>
             <div class="step-grid">
                 <div class="step-card">
                     <div class="step-num">01</div>
-                    <div class="step-title">Validate</div>
-                    <div class="step-desc">Verify dataset schema against 32 features.</div>
+                    <div class="step-title">Ingest & Validate</div>
+                    <div class="step-desc">Verify 10 AQ-10 screening items & demographic indicators.</div>
                 </div>
                 <div class="step-card">
                     <div class="step-num">02</div>
-                    <div class="step-title">Predict</div>
-                    <div class="step-desc">Generate expected grades on 0–20 scale.</div>
+                    <div class="step-title">ML Risk Estimation</div>
+                    <div class="step-desc">Random Forest estimates individual ASD risk probability.</div>
                 </div>
                 <div class="step-card">
                     <div class="step-num">03</div>
-                    <div class="step-title">Prioritize</div>
-                    <div class="step-desc">Identify students requiring support.</div>
+                    <div class="step-title">Tier Prioritization</div>
+                    <div class="step-desc">Classify into High, Medium, Low support priority tiers.</div>
                 </div>
                 <div class="step-card">
                     <div class="step-num">04</div>
-                    <div class="step-title">Allocate</div>
-                    <div class="step-desc">Optimize limited intervention hours.</div>
+                    <div class="step-title">PuLP Allocation</div>
+                    <div class="step-desc">Solve 0-1 knapsack to optimally allocate limited specialist hours.</div>
                 </div>
             </div>
         </div>
@@ -967,10 +1021,10 @@ elif active_view == "Overview":
             """
             <div class="top-header">
                 <div>
-                    <h1 class="top-header-title">Student Risk Overview</h1>
-                    <p class="top-header-subtitle">Monitor academic risk and understand where support resources are needed.</p>
+                    <h1 class="top-header-title">ASD Screening Risk Overview</h1>
+                    <p class="top-header-subtitle">Monitor Autism Spectrum Disorder screening risk tiers and optimize specialist support allocation.</p>
                 </div>
-                <span class="badge badge-neutral">○ NO DATASET</span>
+                <span class="badge badge-neutral">○ NO DATASET ACTIVE</span>
             </div>
             """,
             unsafe_allow_html=True
@@ -979,13 +1033,13 @@ elif active_view == "Overview":
         # 5 KPI Placeholder Cards
         k1, k2, k3, k4, k5 = st.columns(5)
         with k1:
-            st.markdown('<div class="card"><div class="card-label">Total Students</div><div class="card-value" style="color:#71717A;">—</div><div class="card-footer">No active cohort</div></div>', unsafe_allow_html=True)
+            st.markdown('<div class="card"><div class="card-label">Total Individuals</div><div class="card-value" style="color:#71717A;">—</div><div class="card-footer">No active cohort</div></div>', unsafe_allow_html=True)
         with k2:
-            st.markdown('<div class="card"><div class="card-label">High Risk</div><div class="card-value" style="color:#71717A;">—</div><div class="card-footer">—</div></div>', unsafe_allow_html=True)
+            st.markdown('<div class="card"><div class="card-label">High Risk Tier</div><div class="card-value" style="color:#71717A;">—</div><div class="card-footer">—</div></div>', unsafe_allow_html=True)
         with k3:
-            st.markdown('<div class="card"><div class="card-label">Medium Risk</div><div class="card-value" style="color:#71717A;">—</div><div class="card-footer">—</div></div>', unsafe_allow_html=True)
+            st.markdown('<div class="card"><div class="card-label">Medium Risk Tier</div><div class="card-value" style="color:#71717A;">—</div><div class="card-footer">—</div></div>', unsafe_allow_html=True)
         with k4:
-            st.markdown('<div class="card"><div class="card-label">Low Risk</div><div class="card-value" style="color:#71717A;">—</div><div class="card-footer">—</div></div>', unsafe_allow_html=True)
+            st.markdown('<div class="card"><div class="card-label">Low Risk Tier</div><div class="card-value" style="color:#71717A;">—</div><div class="card-footer">—</div></div>', unsafe_allow_html=True)
         with k5:
             st.markdown('<div class="card"><div class="card-label">Support Demand</div><div class="card-value" style="color:#71717A;">—</div><div class="card-footer">—</div></div>', unsafe_allow_html=True)
 
@@ -993,8 +1047,8 @@ elif active_view == "Overview":
             """
             <div class="empty-state-box">
                 <div style="width: 44px; height: 44px; background: #151820; color: #6366F1; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 1rem;">◈</div>
-                <div style="font-size: 17px; font-weight: 700; color: #F4F4F5; margin-bottom: 4px;">No dataset loaded</div>
-                <div style="font-size: 13.5px; color: #A1A1AA; margin-bottom: 20px;">Upload a student cohort to begin analysis. Predictions, risk analysis and resource optimization will appear here.</div>
+                <div style="font-size: 17px; font-weight: 700; color: #F4F4F5; margin-bottom: 4px;">No screening dataset loaded</div>
+                <div style="font-size: 13.5px; color: #A1A1AA; margin-bottom: 20px;">Upload an Autism Spectrum Disorder screening cohort CSV to estimate screening risk probabilities and allocate specialist intervention hours.</div>
             </div>
             """,
             unsafe_allow_html=True
@@ -1002,17 +1056,26 @@ elif active_view == "Overview":
         
         btn_c1, btn_c2, btn_c3 = st.columns([1, 1.2, 1])
         with btn_c2:
-            if st.button("Upload CSV Cohort", key="btn_empty_upload", use_container_width=True):
+            if st.button("Upload ASD Screening CSV", key="btn_empty_upload", use_container_width=True):
                 st.session_state["nav_selection"] = "Import Dataset"
                 st.rerun()
+
+        st.markdown(
+            """
+            <div class="disclaimer-box">
+                <b>Academic Prototype & Screening Disclaimer:</b> This system is an academic research prototype designed for ASD screening risk prioritization and resource optimization. <b>It is NOT a medical or clinical diagnostic tool</b> and does not diagnose or confirm autism spectrum disorder. Formal diagnosis requires comprehensive assessment by qualified medical and clinical professionals.
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
     else:
         # ACTIVE DATASET OVERVIEW
         st.markdown(
             f"""
             <div class="top-header">
                 <div>
-                    <h1 class="top-header-title">Student Risk Overview</h1>
-                    <p class="top-header-subtitle">Monitor academic risk and understand where support resources are needed.</p>
+                    <h1 class="top-header-title">ASD Screening Risk Overview</h1>
+                    <p class="top-header-subtitle">Monitor screening risk distribution and optimal specialist support allocation across the active cohort.</p>
                 </div>
                 <span class="badge badge-neutral">● ACTIVE: {dataset_display_name}</span>
             </div>
@@ -1020,14 +1083,14 @@ elif active_view == "Overview":
             unsafe_allow_html=True
         )
 
-        total_students = len(current_predictions_df)
-        high_risk_count = len(current_predictions_df[current_predictions_df['risk_level'] == 'High Risk'])
-        med_risk_count = len(current_predictions_df[current_predictions_df['risk_level'] == 'Medium Risk'])
-        low_risk_count = len(current_predictions_df[current_predictions_df['risk_level'] == 'Low Risk'])
+        total_individuals = len(current_predictions_df)
+        high_risk_count = len(current_predictions_df[current_predictions_df['risk_category'] == 'High Risk'])
+        med_risk_count = len(current_predictions_df[current_predictions_df['risk_category'] == 'Medium Risk'])
+        low_risk_count = len(current_predictions_df[current_predictions_df['risk_category'] == 'Low Risk'])
         
         total_demand_hours = int(current_predictions_df['support_demand_hours'].sum())
-        high_demand_hours = high_risk_count * 5
-        med_demand_hours = med_risk_count * 2
+        high_demand_hours = high_risk_count * SUPPORT_HOURS_HIGH_RISK
+        med_demand_hours = med_risk_count * SUPPORT_HOURS_MED_RISK
 
         base_cap = min(300, total_demand_hours) if total_demand_hours > 0 else 0
         _, _, base_metrics = run_dynamic_optimization(current_predictions_df, base_cap)
@@ -1035,43 +1098,43 @@ elif active_view == "Overview":
         # 5-Card Metric Row
         k1, k2, k3, k4, k5 = st.columns(5)
         with k1:
-            st.markdown(f'<div class="card"><div class="card-label">Total Students</div><div class="card-value">{total_students}</div><div class="card-footer">Active cohort</div></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="card"><div class="card-label">Total Individuals</div><div class="card-value">{total_individuals}</div><div class="card-footer">Active cohort</div></div>', unsafe_allow_html=True)
         with k2:
-            hr_pct = (high_risk_count / total_students * 100) if total_students else 0
-            st.markdown(f'<div class="card"><div class="card-label">High Risk</div><div class="card-value" style="color:#F87171;">{high_risk_count}</div><div class="card-footer"><span class="badge badge-high">{hr_pct:.1f}%</span> of cohort</div></div>', unsafe_allow_html=True)
+            hr_pct = (high_risk_count / total_individuals * 100) if total_individuals else 0
+            st.markdown(f'<div class="card"><div class="card-label">High Risk (P ≥ 0.70)</div><div class="card-value" style="color:#F87171;">{high_risk_count}</div><div class="card-footer"><span class="badge badge-high">{hr_pct:.1f}%</span> of cohort</div></div>', unsafe_allow_html=True)
         with k3:
-            mr_pct = (med_risk_count / total_students * 100) if total_students else 0
-            st.markdown(f'<div class="card"><div class="card-label">Medium Risk</div><div class="card-value" style="color:#FBBF24;">{med_risk_count}</div><div class="card-footer"><span class="badge badge-medium">{mr_pct:.1f}%</span> of cohort</div></div>', unsafe_allow_html=True)
+            mr_pct = (med_risk_count / total_individuals * 100) if total_individuals else 0
+            st.markdown(f'<div class="card"><div class="card-label">Medium Risk (0.30–0.70)</div><div class="card-value" style="color:#FBBF24;">{med_risk_count}</div><div class="card-footer"><span class="badge badge-medium">{mr_pct:.1f}%</span> of cohort</div></div>', unsafe_allow_html=True)
         with k4:
-            lr_pct = (low_risk_count / total_students * 100) if total_students else 0
-            st.markdown(f'<div class="card"><div class="card-label">Low Risk</div><div class="card-value" style="color:#4ADE80;">{low_risk_count}</div><div class="card-footer"><span class="badge badge-low">{lr_pct:.1f}%</span> of cohort</div></div>', unsafe_allow_html=True)
+            lr_pct = (low_risk_count / total_individuals * 100) if total_individuals else 0
+            st.markdown(f'<div class="card"><div class="card-label">Low Risk (P < 0.30)</div><div class="card-value" style="color:#4ADE80;">{low_risk_count}</div><div class="card-footer"><span class="badge badge-low">{lr_pct:.1f}%</span> of cohort</div></div>', unsafe_allow_html=True)
         with k5:
-            st.markdown(f'<div class="card"><div class="card-label">Support Demand</div><div class="card-value" style="color:#818CF8;">{total_demand_hours}h</div><div class="card-footer">Unconstrained</div></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="card"><div class="card-label">Support Demand</div><div class="card-value" style="color:#818CF8;">{total_demand_hours}h</div><div class="card-footer">Unconstrained / week</div></div>', unsafe_allow_html=True)
 
         st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
 
-        # Hero Insight
+        # Hero Insight Banner
         st.markdown(
             f"""
             <div class="hero-insight">
                 <div class="hero-insight-title">
-                    <span>Cohort Requires Attention</span>
-                    <span class="badge badge-neutral">{total_demand_hours}h Total Demand</span>
+                    <span>Screening Cohort Summary</span>
+                    <span class="badge badge-neutral">{total_demand_hours}h Total Specialist Demand</span>
                 </div>
                 <div class="hero-insight-body">
-                    <b>{high_risk_count} students</b> are currently classified as High Risk.<br>
-                    Estimated support requirement: <b>{high_demand_hours} hours / week</b> for high-risk students. At baseline capacity (<b>{base_cap}h</b>), the optimizer covers <b>{base_metrics['demand_coverage_percentage']:.1f}%</b> of total cohort demand.
+                    <b>{high_risk_count} individuals</b> are categorized as High Risk (probability ≥ 70%).<br>
+                    Estimated support requirement: <b>{high_demand_hours} hours / week</b> for high-risk individuals. At baseline capacity (<b>{base_cap}h</b>), the PuLP optimization solver covers <b>{base_metrics['demand_coverage_percentage']:.1f}%</b> of total cohort demand (<b>{base_metrics['individuals_selected']} individuals</b> supported).
                 </div>
             </div>
             """,
             unsafe_allow_html=True
         )
 
-        # Risk Distribution Dark Chart with Direct Text Labels
-        st.markdown('<div class="card"><div class="card-label">Risk Distribution (Students by Tier)</div>', unsafe_allow_html=True)
-        hr_p = (high_risk_count / total_students * 100) if total_students else 0
-        mr_p = (med_risk_count / total_students * 100) if total_students else 0
-        lr_p = (low_risk_count / total_students * 100) if total_students else 0
+        # Full-Width Risk Distribution Chart
+        st.markdown('<div class="card"><div class="card-label">Screening Risk Distribution (Individuals by Priority Tier)</div>', unsafe_allow_html=True)
+        hr_p = (high_risk_count / total_individuals * 100) if total_individuals else 0
+        mr_p = (med_risk_count / total_individuals * 100) if total_individuals else 0
+        lr_p = (low_risk_count / total_individuals * 100) if total_individuals else 0
         
         risk_bar_data = pd.DataFrame({
             'Category': ['High Risk', 'Medium Risk', 'Low Risk'],
@@ -1086,7 +1149,7 @@ elif active_view == "Overview":
         
         base_risk = alt.Chart(risk_bar_data).encode(
             y=alt.Y('Category:N', title=None, sort=['High Risk', 'Medium Risk', 'Low Risk'], axis=alt.Axis(labelColor='#F4F4F5', labelFontSize=12)),
-            x=alt.X('Count:Q', title='Students', scale=alt.Scale(domain=[0, max_c * 1.25]), axis=alt.Axis(grid=True, gridColor='#272B33', labelColor='#A1A1AA', titleColor='#A1A1AA'))
+            x=alt.X('Count:Q', title='Individuals', scale=alt.Scale(domain=[0, max_c * 1.25]), axis=alt.Axis(grid=True, gridColor='#272B33', labelColor='#A1A1AA', titleColor='#A1A1AA'))
         )
         bars_risk = base_risk.mark_bar(cornerRadiusEnd=4, size=24).encode(
             color=alt.Color(
@@ -1109,19 +1172,28 @@ elif active_view == "Overview":
         ).encode(
             text='Label:N'
         )
-        risk_chart = (bars_risk + text_risk).properties(height=210, background='#111318').configure_view(stroke=None)
+        risk_chart = (bars_risk + text_risk).properties(height=200, background='#111318').configure_view(stroke=None)
         st.altair_chart(risk_chart, use_container_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
+        st.markdown(
+            """
+            <div class="disclaimer-box">
+                <b>Medical & Ethical Notice:</b> This software is an academic screening risk prioritization and resource optimization prototype. <b>It is not a medical diagnostic tool</b> and does not diagnose autism. Screening results reflect statistical model associations and should always be accompanied by clinical evaluation by certified healthcare practitioners.
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
 
 # ==========================================
-# PAGE 2: STUDENT RISK ANALYSIS
+# PAGE 2: ASD RISK ANALYSIS
 # ==========================================
-elif active_view == "Risk Analysis":
+elif active_view == "ASD Risk Analysis":
     if current_predictions_df is None:
-        st.markdown('<div class="top-header"><div><h1 class="top-header-title">Student Risk Analysis</h1><p class="top-header-subtitle">Explore predicted academic risk across the active cohort.</p></div><span class="badge badge-neutral">○ NO DATASET</span></div>', unsafe_allow_html=True)
-        st.info("💡 No dataset active. Please upload a student cohort CSV to begin analysis.")
-        if st.button("Upload Cohort CSV", key="btn_guard_upload_risk"):
+        st.markdown('<div class="top-header"><div><h1 class="top-header-title">ASD Risk Analysis</h1><p class="top-header-subtitle">Explore screening risk probabilities and questionnaire metrics across the active cohort.</p></div><span class="badge badge-neutral">○ NO DATASET</span></div>', unsafe_allow_html=True)
+        st.info("💡 No dataset active. Please upload an ASD screening CSV to begin analysis.")
+        if st.button("Upload ASD Screening CSV", key="btn_guard_upload_risk"):
             st.session_state["nav_selection"] = "Import Dataset"
             st.rerun()
     else:
@@ -1129,8 +1201,8 @@ elif active_view == "Risk Analysis":
             f"""
             <div class="top-header">
                 <div>
-                    <h1 class="top-header-title">Student Risk Analysis</h1>
-                    <p class="top-header-subtitle">Explore predicted academic risk across the active cohort.</p>
+                    <h1 class="top-header-title">ASD Risk Analysis</h1>
+                    <p class="top-header-subtitle">Detailed risk probability breakdown and screening questionnaire insights.</p>
                 </div>
                 <span class="badge badge-neutral">● {dataset_display_name}</span>
             </div>
@@ -1141,40 +1213,40 @@ elif active_view == "Risk Analysis":
         st.markdown('<div class="card" style="padding: 0.875rem 1.25rem; margin-bottom: 1.25rem;">', unsafe_allow_html=True)
         f1, f2, f3 = st.columns([1.5, 2, 1.2])
         with f1:
-            risk_filter = st.multiselect("Risk Tier", options=["High Risk", "Medium Risk", "Low Risk"], default=["High Risk", "Medium Risk", "Low Risk"])
+            risk_filter = st.multiselect("Risk Tier Filter", options=["High Risk", "Medium Risk", "Low Risk"], default=["High Risk", "Medium Risk", "Low Risk"])
         with f2:
-            min_p = float(current_predictions_df['predicted_grade'].min()) if not current_predictions_df.empty else 0.0
-            max_p = float(current_predictions_df['predicted_grade'].max()) if not current_predictions_df.empty else 20.0
-            grade_range = st.slider("Predicted Grade Range", min_value=0.0, max_value=20.0, value=(min_p, max_p), step=0.5)
+            min_p = float(current_predictions_df['asd_probability'].min()) if not current_predictions_df.empty else 0.0
+            max_p = float(current_predictions_df['asd_probability'].max()) if not current_predictions_df.empty else 1.0
+            prob_range = st.slider("ASD Probability Range", min_value=0.0, max_value=1.0, value=(min_p, max_p), step=0.05)
         with f3:
-            search_id = st.text_input("Filter ID", "", placeholder="e.g. STU001")
+            search_id = st.text_input("Filter ID", "", placeholder="e.g. IND001")
         st.markdown('</div>', unsafe_allow_html=True)
 
         filtered_df = current_predictions_df[
-            (current_predictions_df['risk_level'].isin(risk_filter)) &
-            (current_predictions_df['predicted_grade'] >= grade_range[0]) &
-            (current_predictions_df['predicted_grade'] <= grade_range[1])
+            (current_predictions_df['risk_category'].isin(risk_filter)) &
+            (current_predictions_df['asd_probability'] >= prob_range[0]) &
+            (current_predictions_df['asd_probability'] <= prob_range[1])
         ]
         if search_id.strip():
-            filtered_df = filtered_df[filtered_df['student_id'].str.contains(search_id.strip(), case=False, na=False)]
+            filtered_df = filtered_df[filtered_df['individual_id'].str.contains(search_id.strip(), case=False, na=False)]
 
-        st.caption(f"Showing **{len(filtered_df)}** of **{len(current_predictions_df)}** students.")
+        st.caption(f"Displaying **{len(filtered_df)}** of **{len(current_predictions_df)}** individuals in active cohort.")
 
         rc1, rc2 = st.columns(2)
         with rc1:
             st.markdown('<div class="card"><div class="card-label">Filtered Risk Breakdown</div>', unsafe_allow_html=True)
-            hr_cnt = len(filtered_df[filtered_df['risk_level'] == 'High Risk'])
-            mr_cnt = len(filtered_df[filtered_df['risk_level'] == 'Medium Risk'])
-            lr_cnt = len(filtered_df[filtered_df['risk_level'] == 'Low Risk'])
+            hr_cnt = len(filtered_df[filtered_df['risk_category'] == 'High Risk'])
+            mr_cnt = len(filtered_df[filtered_df['risk_category'] == 'Medium Risk'])
+            lr_cnt = len(filtered_df[filtered_df['risk_category'] == 'Low Risk'])
             r_counts = pd.DataFrame({
                 'Risk': ['High Risk', 'Medium Risk', 'Low Risk'],
                 'Count': [hr_cnt, mr_cnt, lr_cnt],
-                'Label': [f"{hr_cnt} stu", f"{mr_cnt} stu", f"{lr_cnt} stu"]
+                'Label': [f"{hr_cnt} ind", f"{mr_cnt} ind", f"{lr_cnt} ind"]
             })
             max_rc = max(hr_cnt, mr_cnt, lr_cnt, 1)
             base_r = alt.Chart(r_counts).encode(
                 x=alt.X('Risk:N', title=None, sort=['High Risk', 'Medium Risk', 'Low Risk'], axis=alt.Axis(labelColor='#F4F4F5', labelFontSize=12)),
-                y=alt.Y('Count:Q', title='Students', scale=alt.Scale(domain=[0, max_rc * 1.3]), axis=alt.Axis(grid=True, gridColor='#272B33', labelColor='#A1A1AA', titleColor='#A1A1AA'))
+                y=alt.Y('Count:Q', title='Individuals', scale=alt.Scale(domain=[0, max_rc * 1.3]), axis=alt.Axis(grid=True, gridColor='#272B33', labelColor='#A1A1AA', titleColor='#A1A1AA'))
             )
             bars_r = base_r.mark_bar(cornerRadiusEnd=4, size=32).encode(
                 color=alt.Color('Risk:N', scale=alt.Scale(domain=['High Risk', 'Medium Risk', 'Low Risk'], range=['#EF4444', '#F59E0B', '#22C55E']), legend=None),
@@ -1195,11 +1267,11 @@ elif active_view == "Risk Analysis":
             st.markdown('</div>', unsafe_allow_html=True)
 
         with rc2:
-            st.markdown('<div class="card"><div class="card-label">Predicted Grade Distribution</div>', unsafe_allow_html=True)
+            st.markdown('<div class="card"><div class="card-label">ASD Probability Distribution</div>', unsafe_allow_html=True)
             if not filtered_df.empty:
                 g_hist = alt.Chart(filtered_df).mark_bar(cornerRadiusEnd=2, color='#6366F1').encode(
-                    x=alt.X('predicted_grade:Q', bin=alt.Bin(maxbins=20), title='Predicted Grade (0–20)', axis=alt.Axis(gridColor='#272B33', labelColor='#A1A1AA', titleColor='#A1A1AA')),
-                    y=alt.Y('count():Q', title='Students', axis=alt.Axis(grid=True, gridColor='#272B33', labelColor='#A1A1AA', titleColor='#A1A1AA'))
+                    x=alt.X('asd_probability:Q', bin=alt.Bin(maxbins=20), title='Predicted ASD Probability (0.0–1.0)', axis=alt.Axis(gridColor='#272B33', labelColor='#A1A1AA', titleColor='#A1A1AA')),
+                    y=alt.Y('count():Q', title='Individuals', axis=alt.Axis(grid=True, gridColor='#272B33', labelColor='#A1A1AA', titleColor='#A1A1AA'))
                 ).properties(height=180, background='#111318').configure_view(stroke=None)
                 st.altair_chart(g_hist, use_container_width=True)
             else:
@@ -1208,26 +1280,27 @@ elif active_view == "Risk Analysis":
 
         st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
 
-        st.markdown('<div class="card"><div class="card-label" style="margin-bottom: 10px;">Student Roster</div>', unsafe_allow_html=True)
-        tbl_cols = ['student_id', 'predicted_grade', 'risk_level', 'risk_score', 'support_demand_hours']
-        if 'actual_grade' in filtered_df.columns and not filtered_df['actual_grade'].isnull().all():
-            tbl_cols.insert(2, 'actual_grade')
-        for extra in ['absences', 'failures', 'studytime', 'G1', 'G2']:
-            if extra in filtered_df.columns:
-                tbl_cols.append(extra)
+        st.markdown('<div class="card"><div class="card-label" style="margin-bottom: 10px;">Screening Roster & Feature Attribution</div>', unsafe_allow_html=True)
+        tbl_cols = ['individual_id', 'asd_probability', 'risk_category', 'risk_score', 'support_demand_hours', 'age', 'gender', 'ethnicity', 'austim', 'jundice']
+        display_cols = [c for c in tbl_cols if c in filtered_df.columns]
+        
+        # Include AQ-10 summary if present
+        aq_in_df = [f'A{i}_Score' for i in range(1, 11) if f'A{i}_Score' in filtered_df.columns]
+        if aq_in_df:
+            display_cols.extend(aq_in_df)
 
-        st.dataframe(filtered_df[tbl_cols].sort_values(by='risk_score', ascending=False), use_container_width=True, hide_index=True)
+        st.dataframe(filtered_df[display_cols].sort_values(by='risk_score', ascending=False), use_container_width=True, hide_index=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
 
 # ==========================================
-# PAGE 3: RESOURCE ALLOCATION
+# PAGE 3: SUPPORT RESOURCE ALLOCATION
 # ==========================================
-elif active_view == "Resource Allocation":
+elif active_view == "Support Resource Allocation":
     if current_predictions_df is None:
-        st.markdown('<div class="top-header"><div><h1 class="top-header-title">Resource Allocation</h1><p class="top-header-subtitle">Optimize limited support hours across students with highest predicted need.</p></div><span class="badge badge-neutral">○ NO DATASET</span></div>', unsafe_allow_html=True)
-        st.info("💡 No dataset active. Please upload a student cohort CSV to begin analysis.")
-        if st.button("Upload Cohort CSV", key="btn_guard_upload_alloc"):
+        st.markdown('<div class="top-header"><div><h1 class="top-header-title">Support Resource Allocation</h1><p class="top-header-subtitle">Optimize limited specialist support hours across individuals with highest screening priority.</p></div><span class="badge badge-neutral">○ NO DATASET</span></div>', unsafe_allow_html=True)
+        st.info("💡 No dataset active. Please upload an ASD screening CSV to begin analysis.")
+        if st.button("Upload ASD Screening CSV", key="btn_guard_upload_alloc"):
             st.session_state["nav_selection"] = "Import Dataset"
             st.rerun()
     else:
@@ -1235,8 +1308,8 @@ elif active_view == "Resource Allocation":
             f"""
             <div class="top-header">
                 <div>
-                    <h1 class="top-header-title">Resource Allocation</h1>
-                    <p class="top-header-subtitle">Optimize limited support hours across students with highest predicted need.</p>
+                    <h1 class="top-header-title">Support Resource Allocation</h1>
+                    <p class="top-header-subtitle">Operations Research 0-1 Integer Linear Program (Knapsack formulation) for optimal specialist support distribution.</p>
                 </div>
                 <span class="badge badge-neutral">● {dataset_display_name}</span>
             </div>
@@ -1249,18 +1322,18 @@ elif active_view == "Resource Allocation":
 
         status, dyn_alloc_df, metrics = run_dynamic_optimization(current_predictions_df, capacity_input)
         if status != "Optimal":
-            st.error(f"Solver Error: {status}")
+            st.error(f"Solver Status: {status}")
             st.stop()
 
         st.markdown(
             f"""
             <div class="card" style="border-left: 4px solid #22C55E; margin-bottom: 1.25rem;">
                 <div style="font-size: 14px; font-weight: 700; color: #F4F4F5; display: flex; justify-content: space-between;">
-                    <span style="color:#4ADE80;">✓ Optimal allocation found</span>
-                    <span class="badge badge-low">{metrics['resource_utilization_percentage']:.1f}% Utilization</span>
+                    <span style="color:#4ADE80;">✓ Optimal Support Allocation Plan Solved (PuLP ILP)</span>
+                    <span class="badge badge-low">{metrics['resource_utilization_percentage']:.1f}% Resource Utilization</span>
                 </div>
                 <div style="font-size: 13px; color: #A1A1AA; margin-top: 6px;">
-                    <b>{metrics['allocated_hours']}h allocated</b> of {metrics['available_hours']}h capacity · <b>{metrics['unused_hours']}h remaining</b> · <b>{metrics['students_selected']} students supported</b>
+                    <b>{metrics['allocated_hours']}h allocated</b> of {metrics['available_hours']}h available specialist budget · <b>{metrics['unused_hours']}h remaining</b> · <b>{metrics['individuals_selected']} individuals supported</b>
                 </div>
             </div>
             """,
@@ -1269,34 +1342,32 @@ elif active_view == "Resource Allocation":
 
         k1, k2, k3, k4 = st.columns(4)
         with k1:
-            st.markdown(f'<div class="card"><div class="card-label">Allocated Hours</div><div class="card-value" style="color:#818CF8;">{metrics["allocated_hours"]}h</div><div class="card-footer">Budget: {capacity_input}h</div></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="card"><div class="card-label">Allocated Support</div><div class="card-value" style="color:#818CF8;">{metrics["allocated_hours"]}h</div><div class="card-footer">Budget: {capacity_input}h</div></div>', unsafe_allow_html=True)
         with k2:
-            st.markdown(f'<div class="card"><div class="card-label">Remaining Capacity</div><div class="card-value">{metrics["unused_hours"]}h</div><div class="card-footer">Unused hours</div></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="card"><div class="card-label">Remaining Capacity</div><div class="card-value">{metrics["unused_hours"]}h</div><div class="card-footer">Unallocated hours</div></div>', unsafe_allow_html=True)
         with k3:
-            st.markdown(f'<div class="card"><div class="card-label">Demand Coverage</div><div class="card-value">{metrics["demand_coverage_percentage"]:.1f}%</div><div class="card-footer">{metrics["allocated_hours"]} of {total_demand}h</div></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="card"><div class="card-label">Demand Coverage</div><div class="card-value">{metrics["demand_coverage_percentage"]:.1f}%</div><div class="card-footer">{metrics["allocated_hours"]}h of {total_demand}h total demand</div></div>', unsafe_allow_html=True)
         with k4:
-            st.markdown(f'<div class="card"><div class="card-label">Students Selected</div><div class="card-value">{metrics["students_selected"]}</div><div class="card-footer">{metrics["high_risk_selected"]} High + {metrics["medium_risk_selected"]} Med</div></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="card"><div class="card-label">Individuals Selected</div><div class="card-value">{metrics["individuals_selected"]}</div><div class="card-footer">{metrics["high_risk_selected"]} High + {metrics["medium_risk_selected"]} Medium</div></div>', unsafe_allow_html=True)
 
         st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
 
-        st.markdown('<div class="card"><div class="card-label" style="margin-bottom: 10px;">Intervention Schedule (Prioritized Students)</div>', unsafe_allow_html=True)
+        st.markdown('<div class="card"><div class="card-label" style="margin-bottom: 10px;">Prioritized Support Allocation Schedule</div>', unsafe_allow_html=True)
         sel_df = dyn_alloc_df[dyn_alloc_df['selected_for_support'] == 1].sort_values(by='risk_score', ascending=False)
-        s_cols = ['student_id', 'predicted_grade', 'risk_level', 'risk_score', 'support_demand_hours']
-        for extra in ['absences', 'failures', 'studytime', 'G1', 'G2']:
-            if extra in sel_df.columns:
-                s_cols.append(extra)
-        st.dataframe(sel_df[s_cols], use_container_width=True, hide_index=True)
+        s_cols = ['individual_id', 'asd_probability', 'risk_category', 'risk_score', 'support_demand_hours', 'age', 'gender', 'ethnicity', 'austim']
+        display_s_cols = [c for c in s_cols if c in sel_df.columns]
+        st.dataframe(sel_df[display_s_cols], use_container_width=True, hide_index=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
 
 # ==========================================
-# PAGE 4: STUDENT EXPLORER
+# PAGE 4: INDIVIDUAL SCREENING EXPLORER
 # ==========================================
-elif active_view == "Student Explorer":
+elif active_view == "Individual Screening Explorer":
     if current_predictions_df is None:
-        st.markdown('<div class="top-header"><div><h1 class="top-header-title">Student Explorer</h1><p class="top-header-subtitle">Review an individual student\'s predicted risk and recommended intervention level.</p></div><span class="badge badge-neutral">○ NO DATASET</span></div>', unsafe_allow_html=True)
-        st.info("💡 No dataset active. Please upload a student cohort CSV to begin analysis.")
-        if st.button("Upload Cohort CSV", key="btn_guard_upload_exp"):
+        st.markdown('<div class="top-header"><div><h1 class="top-header-title">Individual Screening Explorer</h1><p class="top-header-subtitle">Review an individual\'s screening questionnaire items and recommended support priority.</p></div><span class="badge badge-neutral">○ NO DATASET</span></div>', unsafe_allow_html=True)
+        st.info("💡 No dataset active. Please upload an ASD screening CSV to begin analysis.")
+        if st.button("Upload ASD Screening CSV", key="btn_guard_upload_exp"):
             st.session_state["nav_selection"] = "Import Dataset"
             st.rerun()
     else:
@@ -1304,8 +1375,8 @@ elif active_view == "Student Explorer":
             f"""
             <div class="top-header">
                 <div>
-                    <h1 class="top-header-title">Student Explorer</h1>
-                    <p class="top-header-subtitle">Review an individual student's predicted risk and recommended intervention level.</p>
+                    <h1 class="top-header-title">Individual Screening Explorer</h1>
+                    <p class="top-header-subtitle">Inspect AQ-10 item scores, demographic factors, and recommended support hours for individual cases.</p>
                 </div>
                 <span class="badge badge-neutral">● {dataset_display_name}</span>
             </div>
@@ -1313,64 +1384,66 @@ elif active_view == "Student Explorer":
             unsafe_allow_html=True
         )
 
-        student_list = current_predictions_df['student_id'].tolist()
-        if not student_list:
-            st.info("No students in active cohort.")
+        individual_list = current_predictions_df['individual_id'].tolist()
+        if not individual_list:
+            st.info("No individuals in active cohort.")
             st.stop()
 
         st.markdown('<div class="card" style="padding: 1rem 1.25rem; margin-bottom: 1.25rem;">', unsafe_allow_html=True)
         sc1, sc2 = st.columns([2, 3])
         with sc1:
-            sel_id = st.selectbox("Select Student", student_list, index=0)
+            sel_id = st.selectbox("Select Individual", individual_list, index=0)
         
-        stu = current_predictions_df[current_predictions_df['student_id'] == sel_id].iloc[0]
+        ind = current_predictions_df[current_predictions_df['individual_id'] == sel_id].iloc[0]
         
         # Current allocation match
         def_cap = min(300, int(current_predictions_df['support_demand_hours'].sum())) if len(current_predictions_df) else 0
         _, cur_alloc_df, _ = run_dynamic_optimization(current_predictions_df, def_cap)
-        base_m = cur_alloc_df[cur_alloc_df['student_id'] == sel_id]
+        base_m = cur_alloc_df[cur_alloc_df['individual_id'] == sel_id]
         is_sel = int(base_m.iloc[0]['selected_for_support']) if not base_m.empty else 0
 
         with sc2:
             st.markdown("<div style='height: 24px;'></div>", unsafe_allow_html=True)
-            if stu['risk_level'] == "High Risk":
-                st.markdown('<span class="badge badge-high">● High Risk</span>', unsafe_allow_html=True)
-            elif stu['risk_level'] == "Medium Risk":
-                st.markdown('<span class="badge badge-medium">● Medium Risk</span>', unsafe_allow_html=True)
+            if ind['risk_category'] == "High Risk":
+                st.markdown('<span class="badge badge-high">● High Risk Priority</span>', unsafe_allow_html=True)
+            elif ind['risk_category'] == "Medium Risk":
+                st.markdown('<span class="badge badge-medium">● Medium Risk Priority</span>', unsafe_allow_html=True)
             else:
-                st.markdown('<span class="badge badge-low">● Low Risk</span>', unsafe_allow_html=True)
+                st.markdown('<span class="badge badge-low">● Low Risk Priority</span>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
         m1, m2, m3, m4 = st.columns(4)
         with m1:
-            st.markdown(f'<div class="card"><div class="card-label">Predicted Grade</div><div class="card-value">{stu["predicted_grade"]:.2f} <span style="font-size:14px; color:#A1A1AA;">/ 20</span></div><div class="card-footer">{"Actual: " + str(stu["actual_grade"]) if pd.notnull(stu.get("actual_grade")) else "Unseen G3"}</div></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="card"><div class="card-label">ASD Risk Probability</div><div class="card-value" style="color:#818CF8;">{ind["asd_probability"]:.4f}</div><div class="card-footer">{ind["asd_probability"]*100:.1f}% estimated probability</div></div>', unsafe_allow_html=True)
         with m2:
-            st.markdown(f'<div class="card"><div class="card-label">Risk Score</div><div class="card-value">{stu["risk_score"]:.1f}</div><div class="card-footer">Urgency index</div></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="card"><div class="card-label">Screening Priority Score</div><div class="card-value">{ind["risk_score"]:.1f}</div><div class="card-footer">Scale: 0 – 100</div></div>', unsafe_allow_html=True)
         with m3:
-            st.markdown(f'<div class="card"><div class="card-label">Support Demand</div><div class="card-value">{stu["support_demand_hours"]}h</div><div class="card-footer">Weekly allocation</div></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="card"><div class="card-label">Support Demand</div><div class="card-value">{ind["support_demand_hours"]}h</div><div class="card-footer">Weekly allocation hours</div></div>', unsafe_allow_html=True)
         with m4:
-            status_tag = '<span class="badge badge-low">✓ Selected</span>' if is_sel == 1 else ('<span class="badge badge-high">Waitlisted</span>' if stu['support_demand_hours'] > 0 else '<span class="badge badge-neutral">Standard Pace</span>')
-            st.markdown(f'<div class="card"><div class="card-label">Allocation Status</div><div style="margin-top:6px;">{status_tag}</div><div class="card-footer">Under {def_cap}h baseline capacity</div></div>', unsafe_allow_html=True)
+            status_tag = '<span class="badge badge-low">✓ Selected for Support</span>' if is_sel == 1 else ('<span class="badge badge-high">Waitlisted (Capacity)</span>' if ind['support_demand_hours'] > 0 else '<span class="badge badge-neutral">Routine Monitoring</span>')
+            st.markdown(f'<div class="card"><div class="card-label">Allocation Status</div><div style="margin-top:6px;">{status_tag}</div><div class="card-footer">Under {def_cap}h baseline budget</div></div>', unsafe_allow_html=True)
 
         st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
 
-        if stu['risk_level'] == "High Risk":
-            st.markdown('<div class="card" style="border-left: 4px solid #EF4444;"><div style="font-size: 13.5px; font-weight: 700; color: #F87171;">PRIORITY INTERVENTION</div><div style="font-size: 13px; color: #A1A1AA; margin-top: 4px;">This student is classified as High Risk. Recommended support allocation: <b style="color:#F4F4F5;">5 hours / week</b> of structured 1-on-1 tutoring.</div></div>', unsafe_allow_html=True)
-        elif stu['risk_level'] == "Medium Risk":
-            st.markdown('<div class="card" style="border-left: 4px solid #F59E0B;"><div style="font-size: 13.5px; font-weight: 700; color: #FBBF24;">MODERATE SUPPORT</div><div style="font-size: 13px; color: #A1A1AA; margin-top: 4px;">This student is classified as Medium Risk. Recommended support allocation: <b style="color:#F4F4F5;">2 hours / week</b> of small-group review.</div></div>', unsafe_allow_html=True)
+        # Recommendation Card
+        if ind['risk_category'] == "High Risk":
+            st.markdown(f'<div class="card" style="border-left: 4px solid #EF4444;"><div style="font-size: 13.5px; font-weight: 700; color: #F87171;">HIGH SCREENING PRIORITY</div><div style="font-size: 13px; color: #A1A1AA; margin-top: 4px;">Individual demonstrates high screening score indicators (estimated probability {ind["asd_probability"]*100:.1f}%). Recommended support allocation: <b style="color:#F4F4F5;">{SUPPORT_HOURS_HIGH_RISK} hours / week</b> of structured one-on-one specialist intervention.</div></div>', unsafe_allow_html=True)
+        elif ind['risk_category'] == "Medium Risk":
+            st.markdown(f'<div class="card" style="border-left: 4px solid #F59E0B;"><div style="font-size: 13.5px; font-weight: 700; color: #FBBF24;">MODERATE SCREENING PRIORITY</div><div style="font-size: 13px; color: #A1A1AA; margin-top: 4px;">Individual demonstrates moderate screening traits (estimated probability {ind["asd_probability"]*100:.1f}%). Recommended support allocation: <b style="color:#F4F4F5;">{SUPPORT_HOURS_MED_RISK} hours / week</b> of small-group review.</div></div>', unsafe_allow_html=True)
         else:
-            st.markdown('<div class="card" style="border-left: 4px solid #22C55E;"><div style="font-size: 13.5px; font-weight: 700; color: #4ADE80;">STANDARD PROGRESSION</div><div style="font-size: 13px; color: #A1A1AA; margin-top: 4px;">This student is classified as Low Risk. No additional support allocation required under current policy.</div></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="card" style="border-left: 4px solid #22C55E;"><div style="font-size: 13.5px; font-weight: 700; color: #4ADE80;">ROUTINE MONITORING</div><div style="font-size: 13px; color: #A1A1AA; margin-top: 4px;">Individual demonstrates low screening traits (estimated probability {ind["asd_probability"]*100:.1f}%). Recommended support allocation: <b style="color:#F4F4F5;">{SUPPORT_HOURS_LOW_RISK} hours / week</b> (standard routine monitoring).</div></div>', unsafe_allow_html=True)
 
         st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
 
-        st.markdown('<div class="card"><div class="card-label" style="margin-bottom: 10px;">Contextual Student Indicators</div>', unsafe_allow_html=True)
+        # Contextual Questionnaire and Demographics
+        st.markdown('<div class="card"><div class="card-label" style="margin-bottom: 10px;">Screening Factors & Questionnaire Responses</div>', unsafe_allow_html=True)
         c1, c2, c3 = st.columns(3)
         with c1:
-            st.markdown(f"**Academic Milestones:**<br>• G1: **{stu.get('G1', 'N/A')}** / 20<br>• G2: **{stu.get('G2', 'N/A')}** / 20<br>• Past Failures: **{stu.get('failures', 'N/A')}**<br>• Study Time: Level **{stu.get('studytime', 'N/A')}**", unsafe_allow_html=True)
+            st.markdown(f"**AQ-10 Items 1–5:**<br>• A1 Score: **{ind.get('A1_Score', 'N/A')}**<br>• A2 Score: **{ind.get('A2_Score', 'N/A')}**<br>• A3 Score: **{ind.get('A3_Score', 'N/A')}**<br>• A4 Score: **{ind.get('A4_Score', 'N/A')}**<br>• A5 Score: **{ind.get('A5_Score', 'N/A')}**", unsafe_allow_html=True)
         with c2:
-            st.markdown(f"**Attendance & Well-being:**<br>• Absences: **{stu.get('absences', 'N/A')} days**<br>• Health: **{stu.get('health', 'N/A')}** / 5<br>• Free Time: **{stu.get('freetime', 'N/A')}** / 5<br>• Peer Outings: **{stu.get('goout', 'N/A')}** / 5", unsafe_allow_html=True)
+            st.markdown(f"**AQ-10 Items 6–10:**<br>• A6 Score: **{ind.get('A6_Score', 'N/A')}**<br>• A7 Score: **{ind.get('A7_Score', 'N/A')}**<br>• A8 Score: **{ind.get('A8_Score', 'N/A')}**<br>• A9 Score: **{ind.get('A9_Score', 'N/A')}**<br>• A10 Score: **{ind.get('A10_Score', 'N/A')}**", unsafe_allow_html=True)
         with c3:
-            st.markdown(f"**Background & Goals:**<br>• School: **{stu.get('school', 'N/A')}** | Age: **{stu.get('age', 'N/A')}**<br>• Mother Education: Level **{stu.get('Medu', 'N/A')}**<br>• Father Education: Level **{stu.get('Fedu', 'N/A')}**<br>• Higher Ed: **{stu.get('higher', 'N/A')}**", unsafe_allow_html=True)
+            st.markdown(f"**Demographics & Clinical History:**<br>• Age: **{ind.get('age', 'N/A')}** | Gender: **{ind.get('gender', 'N/A')}**<br>• Ethnicity: **{ind.get('ethnicity', 'N/A')}**<br>• Family ASD History: **{ind.get('austim', 'N/A')}**<br>• Born with Jaundice: **{ind.get('jundice', 'N/A')}**<br>• Country: **{ind.get('contry_of_res', 'N/A')}**", unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
 
@@ -1383,48 +1456,81 @@ elif active_view == "Model Insights":
         <div class="top-header">
             <div>
                 <h1 class="top-header-title">Model Performance & Governance</h1>
-                <p class="top-header-subtitle">Performance benchmarks, feature attribution, and governance metadata for the Random Forest model.</p>
+                <p class="top-header-subtitle">Performance benchmarks, classification metrics, feature importance, and clinical governance disclaimers.</p>
             </div>
-            <span class="badge badge-neutral">● Random Forest Regressor</span>
+            <span class="badge badge-neutral">● Random Forest Classifier</span>
         </div>
         """,
         unsafe_allow_html=True
     )
 
-    m1, m2, m3, m4 = st.columns(4)
+    acc_val = cached_metrics.get("accuracy", 0.9433) if cached_metrics else 0.9433
+    prec_val = cached_metrics.get("precision", 0.9167) if cached_metrics else 0.9167
+    rec_val = cached_metrics.get("recall", 0.8684) if cached_metrics else 0.8684
+    f1_val = cached_metrics.get("f1_score", 0.8919) if cached_metrics else 0.8919
+    roc_val = cached_metrics.get("roc_auc", 0.9894) if cached_metrics else 0.9894
+
+    m1, m2, m3, m4, m5 = st.columns(5)
     with m1:
-        st.markdown('<div class="card"><div class="card-label">R² Score</div><div class="card-value" style="color:#818CF8;">0.805</div><div class="card-footer">80.5% variance explained</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="card"><div class="card-label">Accuracy</div><div class="card-value" style="color:#818CF8;">{acc_val*100:.1f}%</div><div class="card-footer">Overall test accuracy</div></div>', unsafe_allow_html=True)
     with m2:
-        st.markdown('<div class="card"><div class="card-label">MAE</div><div class="card-value">1.178</div><div class="card-footer">On a 20-point scale</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="card"><div class="card-label">Recall (Sensitivity)</div><div class="card-value" style="color:#4ADE80;">{rec_val*100:.1f}%</div><div class="card-footer">High-risk detection rate</div></div>', unsafe_allow_html=True)
     with m3:
-        st.markdown('<div class="card"><div class="card-label">RMSE</div><div class="card-value">2.001</div><div class="card-footer">Holdout test evaluation</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="card"><div class="card-label">Precision</div><div class="card-value">{prec_val*100:.1f}%</div><div class="card-footer">True positive rate</div></div>', unsafe_allow_html=True)
     with m4:
-        st.markdown('<div class="card"><div class="card-label">Ensemble Size</div><div class="card-value">200</div><div class="card-footer">Decision trees</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="card"><div class="card-label">F1-Score</div><div class="card-value">{f1_val:.3f}</div><div class="card-footer">Harmonic mean</div></div>', unsafe_allow_html=True)
+    with m5:
+        st.markdown(f'<div class="card"><div class="card-label">ROC-AUC</div><div class="card-value" style="color:#FBBF24;">{roc_val:.3f}</div><div class="card-footer">Discriminative ability</div></div>', unsafe_allow_html=True)
 
     st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
 
-    st.markdown('<div class="card"><div class="card-label" style="margin-bottom: 10px;">Top 10 Feature Attribution</div>', unsafe_allow_html=True)
-    if cached_feat_imp is not None:
-        top10 = cached_feat_imp.head(10).sort_values(by='importance', ascending=True)
-        imp_chart = alt.Chart(top10).mark_bar(cornerRadiusEnd=3, color='#6366F1', size=16).encode(
-            x=alt.X('importance:Q', title='Feature Importance Weight', axis=alt.Axis(gridColor='#272B33', labelColor='#A1A1AA', titleColor='#A1A1AA')),
-            y=alt.Y('feature:N', title=None, sort='-x', axis=alt.Axis(labelColor='#A1A1AA')),
-            tooltip=['feature', 'importance']
-        ).properties(height=240, background='#111318').configure_view(stroke=None)
-        st.altair_chart(imp_chart, use_container_width=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+    col_cm, col_imp = st.columns([1.2, 2])
+    with col_cm:
+        st.markdown('<div class="card"><div class="card-label" style="margin-bottom: 8px;">Confusion Matrix (Holdout Test Set)</div>', unsafe_allow_html=True)
+        cm_matrix = cached_metrics.get("confusion_matrix", [[100, 3], [5, 33]]) if cached_metrics else [[100, 3], [5, 33]]
+        cm_df = pd.DataFrame([
+            {"Actual": "Non-ASD (0)", "Predicted": "Non-ASD (0)", "Count": cm_matrix[0][0], "Type": "True Negative"},
+            {"Actual": "Non-ASD (0)", "Predicted": "ASD (1)", "Count": cm_matrix[0][1], "Type": "False Positive"},
+            {"Actual": "ASD (1)", "Predicted": "Non-ASD (0)", "Count": cm_matrix[1][0], "Type": "False Negative"},
+            {"Actual": "ASD (1)", "Predicted": "ASD (1)", "Count": cm_matrix[1][1], "Type": "True Positive"}
+        ])
+        cm_chart = alt.Chart(cm_df).mark_rect().encode(
+            x=alt.X('Predicted:N', title='Predicted Class', axis=alt.Axis(labelColor='#F4F4F5', labelFontSize=11)),
+            y=alt.Y('Actual:N', title='Actual Ground Truth', sort=['Non-ASD (0)', 'ASD (1)'], axis=alt.Axis(labelColor='#F4F4F5', labelFontSize=11)),
+            color=alt.Color('Count:Q', scale=alt.Scale(scheme='indigo'), legend=None),
+            tooltip=['Actual', 'Predicted', 'Count', 'Type']
+        ).properties(height=210, background='#111318')
+        cm_text = cm_chart.mark_text(baseline='middle', fontSize=14, fontWeight=700).encode(
+            text='Count:Q',
+            color=alt.value('#FFFFFF')
+        )
+        st.altair_chart(cm_chart + cm_text, use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with col_imp:
+        st.markdown('<div class="card"><div class="card-label" style="margin-bottom: 8px;">Top 10 Feature Attributions</div>', unsafe_allow_html=True)
+        if cached_feat_imp is not None:
+            top10 = cached_feat_imp.head(10).sort_values(by='importance', ascending=True)
+            imp_chart = alt.Chart(top10).mark_bar(cornerRadiusEnd=3, color='#6366F1', size=16).encode(
+                x=alt.X('importance:Q', title='Gini Importance Weight', axis=alt.Axis(gridColor='#272B33', labelColor='#A1A1AA', titleColor='#A1A1AA')),
+                y=alt.Y('feature:N', title=None, sort='-x', axis=alt.Axis(labelColor='#A1A1AA')),
+                tooltip=['feature', 'importance']
+            ).properties(height=210, background='#111318').configure_view(stroke=None)
+            st.altair_chart(imp_chart, use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
 
     st.markdown(
         """
         <div class="card">
-            <div class="card-label" style="margin-bottom: 8px;">Model Architecture</div>
+            <div class="card-label" style="margin-bottom: 8px;">Model Architecture & Training Specifications</div>
             <div style="font-size: 13px; color: #A1A1AA; line-height: 1.6;">
-                • <b style="color:#F4F4F5;">Algorithm:</b> <code>RandomForestRegressor</code> (scikit-learn)<br>
-                • <b style="color:#F4F4F5;">Estimators:</b> 200 trees · <b>Random State:</b> 42<br>
-                • <b style="color:#F4F4F5;">Features:</b> 32 predictors (17 categorical one-hot encoded, 15 numeric pass-through)<br>
-                • <b style="color:#F4F4F5;">Training / Holdout Split:</b> 80% (316) / 20% (79)
+                • <b style="color:#F4F4F5;">Algorithm:</b> <code>RandomForestClassifier</code> (scikit-learn ensemble)<br>
+                • <b style="color:#F4F4F5;">Hyperparameters:</b> 200 estimators · <code>class_weight='balanced'</code> · <code>random_state=42</code><br>
+                • <b style="color:#F4F4F5;">Preprocessing Pipeline:</b> <code>ColumnTransformer</code> with One-Hot Encoding for categorical features & Median Imputation for numeric features<br>
+                • <b style="color:#F4F4F5;">Feature Vector:</b> 18 predictors (10 AQ-10 item scores + Age + Gender + Ethnicity + Jaundice + Family History + Country + App Usage + Relation)<br>
+                • <b style="color:#F4F4F5;">Evaluation Split:</b> Stratified 80% Train (563 instances) / 20% Holdout Test (141 instances)
             </div>
         </div>
         """,
@@ -1433,8 +1539,12 @@ elif active_view == "Model Insights":
 
     st.markdown(
         """
-        <div class="scope-box">
-            <b style="color:#F4F4F5;">Scope & Limitations:</b> This prototype predicts student academic performance. It is <b>not a clinical or diagnostic system and is not validated for ASD-specific prediction</b>. The underlying architecture can be adapted to validated clinical educational datasets.
+        <div class="disclaimer-box" style="margin-top: 1rem;">
+            <b style="color:#F4F4F5;">Comprehensive Ethical, Clinical & Governance Disclaimer:</b><br>
+            1. <b>Screening vs. Diagnosis:</b> This machine learning system is an academic research prototype designed to assist in <i>screening risk prioritization</i> and <i>resource allocation</i>. It does <b>NOT</b> provide clinical diagnosis or medical confirmation of Autism Spectrum Disorder.<br>
+            2. <b>False Positives & Negatives:</b> Machine learning classifiers may exhibit false positives (generating unwarranted concern) or false negatives (potentially delaying specialist referral). High screening sensitivity/recall was prioritized during model optimization.<br>
+            3. <b>Demographic & Sampling Limitations:</b> Model feature importance reflects statistical predictive associations within the training dataset (UCI Autism Screening Adult Dataset by Dr. Fadi Fayez Thabtah) and does not establish clinical etiology or causation.<br>
+            4. <b>Clinical Prerequisite:</b> All allocation recommendations must be reviewed by qualified clinical and psychiatric professionals prior to real-world intervention planning.
         </div>
         """,
         unsafe_allow_html=True
@@ -1450,7 +1560,7 @@ elif active_view == "Analysis History":
         <div class="top-header">
             <div>
                 <h1 class="top-header-title">Analysis History</h1>
-                <p class="top-header-subtitle">Review previous student cohorts and their resource allocation results.</p>
+                <p class="top-header-subtitle">Review previous ASD screening cohorts and their optimization allocation records.</p>
             </div>
             <span class="badge badge-neutral">● Persistent Storage</span>
         </div>
@@ -1466,7 +1576,7 @@ elif active_view == "Analysis History":
             <div class="empty-state-box">
                 <div style="font-size: 24px; margin-bottom: 8px;">↻</div>
                 <div style="font-size: 16px; font-weight: 700; color: #F4F4F5; margin-bottom: 4px;">No analysis history yet</div>
-                <div style="font-size: 13px; color: #A1A1AA;">Once you process a student cohort, your previous analyses will appear here.</div>
+                <div style="font-size: 13px; color: #A1A1AA;">Once you process an ASD screening cohort CSV, your previous analyses will appear here.</div>
             </div>
             """,
             unsafe_allow_html=True
@@ -1481,7 +1591,7 @@ elif active_view == "Analysis History":
             h_source_filter = st.selectbox("Source Filter", ["All Sources", "Uploaded CSV"])
         with h_f3:
             st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
-            if st.button("🗑 Clear All", key="btn_clear_all_hist", use_container_width=True):
+            if st.button("🗑 Clear All History", key="btn_clear_all_hist", use_container_width=True):
                 clear_all_history()
                 st.session_state["active_analysis_id"] = None
                 st.rerun()
@@ -1498,6 +1608,7 @@ elif active_view == "Analysis History":
         for idx, rec in enumerate(filtered_history):
             is_currently_active = (st.session_state.get("active_analysis_id") == rec.get("analysis_id"))
             rec_id = rec.get("analysis_id")
+            ind_count = rec.get('individual_count', rec.get('student_count', 0))
             
             st.markdown(
                 f"""
@@ -1506,7 +1617,7 @@ elif active_view == "Analysis History":
                         <div>
                             <div style="font-size:15px; font-weight:700; color:#F4F4F5;">{rec.get('dataset_name')}</div>
                             <div style="font-size:12px; color:#71717A; margin-top:2px;">
-                                {rec.get('source_type')} · <b>{rec.get('student_count')} students</b> · {rec.get('timestamp')} · ID: <code>{rec_id}</code>
+                                {rec.get('source_type')} · <b>{ind_count} individuals</b> · {rec.get('timestamp')} · ID: <code>{rec_id}</code>
                             </div>
                         </div>
                         <div>
@@ -1514,13 +1625,13 @@ elif active_view == "Analysis History":
                         </div>
                     </div>
                     <div style="display:flex; gap:16px; margin-top:12px; font-size:13px; color:#A1A1AA; flex-wrap:wrap;">
-                        <span>High: <b style="color:#F87171;">{rec.get('high_risk')}</b></span>
-                        <span>Med: <b style="color:#FBBF24;">{rec.get('medium_risk')}</b></span>
-                        <span>Low: <b style="color:#4ADE80;">{rec.get('low_risk')}</b></span>
+                        <span>High Risk: <b style="color:#F87171;">{rec.get('high_risk')}</b></span>
+                        <span>Medium Risk: <b style="color:#FBBF24;">{rec.get('medium_risk')}</b></span>
+                        <span>Low Risk: <b style="color:#4ADE80;">{rec.get('low_risk')}</b></span>
                         <span>·</span>
-                        <span>Demand: <b style="color:#F4F4F5;">{rec.get('total_support_demand')}h</b></span>
+                        <span>Specialist Demand: <b style="color:#F4F4F5;">{rec.get('total_support_demand')}h</b></span>
                         <span>Allocated: <b style="color:#818CF8;">{rec.get('allocated_hours')}h / {rec.get('capacity')}h</b></span>
-                        <span>Selected: <b style="color:#F4F4F5;">{rec.get('students_selected')}</b></span>
+                        <span>Supported: <b style="color:#F4F4F5;">{rec.get('individuals_selected', rec.get('students_selected', 0))}</b></span>
                         <span>Coverage: <b style="color:#F4F4F5;">{rec.get('demand_coverage'):.1f}%</b></span>
                     </div>
                 </div>
