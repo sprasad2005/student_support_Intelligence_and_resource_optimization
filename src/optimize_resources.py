@@ -31,9 +31,9 @@ def solve_resource_allocation(df, capacity_hours, verbose=False):
     Returns:
         tuple: (prob_status, results_df, metrics_dict)
     """
-    # Identify ID column (support individual_id, student_id, id)
+    # Identify ID column
     id_col = 'individual_id'
-    for c in ['individual_id', 'student_id', 'id', 'client_id']:
+    for c in ['individual_id', 'id', 'client_id']:
         if c in df.columns:
             id_col = c
             break
@@ -113,7 +113,6 @@ def solve_resource_allocation(df, capacity_hours, verbose=False):
         'allocated_hours': allocated_hours,
         'unused_hours': unused_hours,
         'individuals_selected': individuals_selected,
-        'students_selected': individuals_selected,  # backward compatibility alias
         'high_risk_selected': high_risk_selected,
         'medium_risk_selected': medium_risk_selected,
         'low_risk_selected': low_risk_selected,
