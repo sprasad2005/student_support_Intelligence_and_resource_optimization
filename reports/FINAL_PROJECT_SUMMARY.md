@@ -83,11 +83,36 @@ Application URL: `http://localhost:8501`
 
 ---
 
-## 5. Viva / Defense Quick Reference
+## 5. Viva / Defense Quick Reference & Critical Rules
+
+### 4 Golden Rules for Viva Defense:
+
+1. **Terminology (`Class/ASD = 1`):**
+   - Say: *"ASD Traits Observed"* or *"Screening Classification: Trait Present"*.
+   - Never say: *"ASD diagnosis"* or *"diagnosed with autism"*. The model performs behavioural screening triage, not medical diagnosis.
+
+2. **Accuracy & Metric Claims:**
+   - Say: *"On our held-out test set of 141 samples, the Random Forest achieved 94.33% accuracy and 86.84% recall."*
+   - Never say: *"The system is 94.33% accurate for diagnosing autism."* (Diagnoses require clinical multi-disciplinary tools like ADOS-2 / ADI-R).
+
+3. **Resource Sizing Heuristic (5h / 2h / 0h):**
+   - Say: *"The 5h / 2h / 0h values represent a project-level operational heuristic to demonstrate Operations Research (0-1 Knapsack) resource allocation under constrained specialist capacity."*
+   - Never claim this is a medically prescribed therapy dosage.
+
+4. **Probability Representation:**
+   - Say: *"Predicted ASD probability"* (or *"Tree ensemble voting probability"* from `predict_proba()`).
+   - Do NOT say: *"Calibrated ASD probability"* unless isotonic regression / Platt scaling (`CalibratedClassifierCV`) was explicitly fitted.
+
+---
+
+### Key Viva Questions & Answers:
 
 1. **Why Random Forest over Deep Learning?**
-   - Tabular clinical screening data with categorical/binary survey items achieves state-of-the-art ROC-AUC (0.9894) with full explainability, fast inference, and zero risk of GPU out-of-memory errors on standard hardware.
+   - Tabular clinical screening data with categorical/binary survey items achieves high ROC-AUC (0.9894) with full explainability (Gini importance), sub-millisecond inference, and reproducibility without GPU overhead.
+
 2. **Why is Recall prioritized over Accuracy?**
-   - In clinical screening, false negatives (missing an individual who requires early intervention) carry much higher downstream cost than false positives (which undergo secondary clinical review).
+   - In clinical screening triage, false negatives (missing an individual with significant traits who needs support) carry severe consequences compared to false positives (who are filtered out during secondary clinical review).
+
 3. **Why PuLP 0-1 Knapsack for Resource Allocation?**
-   - Heuristic allocation (e.g. first-come-first-served) leaves specialist hours unutilized and fails to maximize aggregate screening priority under strict weekly capacity constraints.
+   - Heuristic allocation (e.g. first-come-first-served) fails to maximize aggregate screening priority and underutilizes clinical specialist hours under strict weekly capacity constraints.
+
